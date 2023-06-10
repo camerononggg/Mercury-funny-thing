@@ -9,7 +9,7 @@
 █░░▄▀░░██░░▄▀░░██░░▄▀░░█░░▄▀▄▀▄▀▄▀▄▀░░█░░▄▀▄▀▄▀▄▀▄▀▄▀░░███░░▄▀░░█████████░░▄▀░░██░░▄▀░░█░░▄▀▄▀▄▀▄▀▄▀▄▀░░███████░░░░▄▀░░░░█████
 █░░▄▀░░██░░░░░░██░░▄▀░░█░░▄▀░░░░░░░░░░█░░▄▀░░yue<3▀░░░░███░░▄▀░░█████████░░▄▀░░██░░▄▀░░█░░▄▀░░░░░░▄▀░░░░█████████░░▄▀░░███████
 █░░▄▀░░██████████░░▄▀░░█░░▄▀░░█████████░░▄▀░░██░░▄▀░░█████░░▄▀░░█████████░░▄▀░░██░░▄▀░░█░░▄▀░░██░░▄▀░░███████████░░▄▀░░███████
-█░░▄▀░░██████████░░▄▀░░█░░▄▀░░░░░░░░░░█░░▄▀░░██░░▄▀░░░░░░█░░▄▀░░░░░░░░░░█░░▄▀░░░░░░▄▀░░█░░▄▀░░██░░▄▀░░░░░░███████░░▄▀░░███████main
+█░░▄▀░░██████████░░▄▀░░█░░▄▀░░░░░░░░░░█░░▄▀░░██░░▄▀░░░░░░█░░▄▀░░░░░░░░░░█░░▄▀░░░░░░▄▀░░█░░▄▀░░██░░▄▀░░░░░░███████░░▄▀░░███████
 █░░▄▀░░██████████░░▄▀░░█░░▄▀▄▀▄▀▄▀▄▀░░█░░▄▀░░██░░▄▀▄▀▄▀░░█░░▄▀▄▀▄▀▄▀▄▀░░█░░▄▀▄▀▄▀▄▀▄▀░░█░░▄▀░░██░░▄▀▄▀▄▀░░███████░░▄▀░░███████
 █░░░░░░██████████░░░░░░█░░░░░░░░░░░░░░█░░░░░░██░░░░░░░░░░█░░░░░░░░░░░░░░█░░░░░░░░░░░░░░█░░░░░░██░░░░░░░░░░███████░░░░░░███████
 ██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
@@ -118,7 +118,7 @@ end
 function Library:change_theme(toTheme)
 	Library.CurrentTheme = toTheme
 	local c = self:lighten(toTheme.Tertiary, 20)
-	Library.DisplayName.Text = "Hello!, <font color='rgb(" ..  math.floor(c.R*255) .. "," .. math.floor(c.G*255) .. "," .. math.floor(c.B*255) .. ")'> <b>" .. LocalPlayer.Username .. "</b> </font>"
+	Library.DisplayName.Text = "Welcome, <font color='rgb(" ..  math.floor(c.R*255) .. "," .. math.floor(c.G*255) .. "," .. math.floor(c.B*255) .. ")'> <b>" .. LocalPlayer.DisplayName .. "</b> </font>"
 	for color, objects in next, Library.ThemeObjects do
 		local themeColor = Library.CurrentTheme[color]
 		for _, obj in next, objects do
@@ -777,7 +777,7 @@ function Library:create(options)
 
 		local displayName = profile:object("TextLabel", {
 			RichText = true,
-			Text = "Hello!, <font color='rgb(" ..  math.floor(c.R*255) .. "," .. math.floor(c.G*255) .. "," .. math.floor(c.B*255) .. ")'> <b>" .. LocalPlayer.DisplayName .. "</b> </font>",
+			Text = "Welcome, <font color='rgb(" ..  math.floor(c.R*255) .. "," .. math.floor(c.G*255) .. "," .. math.floor(c.B*255) .. ")'> <b>" .. LocalPlayer.DisplayName .. "</b> </font>",
 			TextScaled = true,
 			Position = UDim2.new(0, 105,0, 10),
 			Theme = {TextColor3 = {"Tertiary", 10}},
@@ -825,7 +825,7 @@ function Library:create(options)
 	local settingsTabIcon = profile:object("ImageButton", {
 		BackgroundTransparency = 1,
 		Theme = {ImageColor3 = "WeakText"},
-		Size = UDim2.fromOffset(26, 26),
+		Size = UDim2.fromOffset(24, 24),
 		Position = UDim2.new(1, -10, 1, -10),
 		AnchorPoint = Vector2.new(1, 1),
 		Image = "http://www.roblox.com/asset/?id=8559790237"
@@ -3561,5 +3561,3 @@ return setmetatable(Library, {
 		return rawget(Library, i:lower())
 	end
 })
-
---a
