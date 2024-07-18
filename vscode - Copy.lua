@@ -936,7 +936,7 @@ function Library:create(options)
 	return mt
 end
 
-        local changelogTab = Library.tab(mt, {
+        local changelogTabIcon = Library.tab(mt, {
                 Name = "Changelog",
                 Internal = changelogTabIcon,
                 Icon = "http://www.roblox.com/asset/?id=8577523456" -- Replace with icon ID
