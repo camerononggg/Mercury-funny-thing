@@ -435,7 +435,7 @@ function Library:create(options)
 		Name = "Mercury",
 		Size = UDim2.fromOffset(600, 400),
 		Theme = self.Themes[settings.Theme],
-		Link = "https://github.com/deeeity/goofy"
+		Link = "https://github.com/deeeity/mercury-lib"
 	}, options)
 
 	if getgenv and getgenv().MercuryUI then
@@ -916,6 +916,13 @@ function Library:create(options)
 		Internal = creditsTabIcon,
 		Icon = "http://www.roblox.com/asset/?id=8577523456"
 	})
+        
+            
+        local changelogTab = Library.tab(mt, {
+                Name = "Changelog",
+                Icon = "rbxassetid://8577523456" -- Replace with a suitable icon ID
+        })
+ 
 
 	rawset(mt, "creditsContainer", creditsTab.container)
 
