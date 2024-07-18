@@ -840,6 +840,16 @@ function Library:create(options)
 		Image = "http://www.roblox.com/asset/?id=8577523456"
 	}):tooltip("credits")
 
+
+        local changelogTabIcon = profile:object("ImageButton", {
+                BackgroundTransparency = 1,
+                Theme = {ImageColor3 = "WeakText"},
+                Size = UDim2.fromOffset(24, 24),
+                Position = UDim2.new(1, -78, 1, -10), -- Adjust position 
+                AnchorPoint = Vector2.new(1, 1),
+                Image = "rbxassetid://8577523456" -- Replace with icon ID
+        }):tooltip("changelog")
+
 	local quickAccess = homePage:object("Frame", {
 		BackgroundTransparency = 1,
 		Size = UDim2.new(1, -20, 0, 180)
@@ -926,19 +936,10 @@ function Library:create(options)
 	return mt
 end
 
-        local changelogTabIcon = profile:object("ImageButton", { 
-                BackgroundTransparency = 1,
-                Theme = {ImageColor3 = "WeakText"},
-                Size = UDim2.fromOffset(24, 24),
-                Position = UDim2.new(1, -78, 1, -10), -- Adjust position 
-                AnchorPoint = Vector2.new(1, 1),
-                Image = "rbxassetid://8577523456" -- Replace with icon ID
-        }):tooltip("changelog")
-
         local changelogTab = Library.tab(mt, {
                 Name = "Changelog",
                 Internal = changelogTabIcon,
-                Icon = "rbxassetid://8577523456" -- Replace with icon ID
+                Icon = "http://www.roblox.com/asset/?id=8577523456" -- Replace with icon ID
         })
 
 function Library:notification(options)
