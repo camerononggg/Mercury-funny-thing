@@ -916,13 +916,6 @@ function Library:create(options)
 		Internal = creditsTabIcon,
 		Icon = "http://www.roblox.com/asset/?id=8577523456"
 	})
-        
-            
-        local changelogTab = Library.tab(mt, {
-                Name = "Changelog",
-                Icon = "rbxassetid://8577523456" -- Replace with a suitable icon ID
-        })
- 
 
 	rawset(mt, "creditsContainer", creditsTab.container)
 
@@ -932,6 +925,21 @@ function Library:create(options)
 
 	return mt
 end
+
+        local changelogTabIcon = profile:object("ImageButton", { 
+                BackgroundTransparency = 1,
+                Theme = {ImageColor3 = "WeakText"},
+                Size = UDim2.fromOffset(24, 24),
+                Position = UDim2.new(1, -78, 1, -10), -- Adjust position 
+                AnchorPoint = Vector2.new(1, 1),
+                Image = "rbxassetid://8577523456" -- Replace with icon ID
+        }):tooltip("changelog")
+
+        local changelogTab = Library.tab(mt, {
+                Name = "Changelog",
+                Internal = changelogTabIcon,
+                Icon = "rbxassetid://8577523456" -- Replace with icon ID
+        })
 
 function Library:notification(options)
 	options = self:set_defaults({
