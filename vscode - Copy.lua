@@ -79,8 +79,22 @@ local Library = {
 			StrongText = Color3.fromHSV(0, 0, 1),        
 			WeakText = Color3.fromHSV(0, 0, 172/255)
 		},
-		OperaGX = {},
-		VisualStudio = {}
+		OperaGX = {
+			Main = Color3.fromRGB(19, 21, 21),
+			Secondary = Color3.fromRGB(65, 63, 63),
+			Tertiary = Color3.fromRGB(51, 153, 137),
+
+			StrongText = Color3.fromHSV(0, 0, 1),        
+			WeakText = Color3.fromHSV(0, 0, 172/255)
+		},
+		VisualStudio = {
+			Main = Color3.fromRGB(19, 21, 21),
+			Secondary = Color3.fromRGB(65, 63, 63),
+			Tertiary = Color3.fromRGB(51, 153, 137),
+
+			StrongText = Color3.fromHSV(0, 0, 1),        
+			WeakText = Color3.fromHSV(0, 0, 172/255)},
+		}
 	},
 	ColorPickerStyles = {
 		Legacy = 0,
