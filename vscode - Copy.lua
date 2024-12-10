@@ -2912,7 +2912,7 @@ function Library:_theme_selector()
 	}):round(7)
 
 	local text = themeContainer:object("TextLabel", {
-		BackgroundTransparency = 1,
+		BackgroundTransparency = 0.5,
 		Position = UDim2.fromOffset(10, 5),
 		Size = UDim2.new(0.5, -10, 0, 22),
 		Text = "Theme",
@@ -2922,14 +2922,14 @@ function Library:_theme_selector()
 	})
 
 	local colorThemesContainer = themeContainer:object("Frame", {
-		Size = UDim2.new(1, 0, 1, -32),
-		BackgroundTransparency = 1,
+		Size = UDim2.new(1, 0, 1, -62),
+		BackgroundTransparency = 0.5,
 		Position = UDim2.new(0.5, 0, 1, -5),
 		AnchorPoint = Vector2.new(0.5, 1)
 	})
 
 	local grid = colorThemesContainer:object("UIGridLayout", {
-		CellPadding = UDim2.fromOffset(10, 10),
+		CellPadding = UDim2.fromOffset(5, 5),
 		CellSize = UDim2.fromOffset(144, 100),
 		VerticalAlignment = Enum.VerticalAlignment.Center
 	})
