@@ -16,8 +16,8 @@
 
 edited: 1/26
 developers:
-v3rm AbstractPoo	discord Abstract#8007
-v3rm 0xDEITY		discord Deity#0228
+discord Abstract#8007
+discord Deity#0228
 
 ]]
 
@@ -85,7 +85,7 @@ local Library = {
 			Tertiary = Color3.fromRGB(51, 153, 137),
 
 			StrongText = Color3.fromHSV(0, 0, 1),        
-			WeakText = Color3.fromHSV(0, 0, 172/255)			
+			WeakText = Color3.fromHSV(0, 0, 172/255)
 		},
 		VisualStudio = {
 						Main = Color3.fromRGB(19, 21, 21),
@@ -861,16 +861,6 @@ function Library:create(options)
 		Image = "http://www.roblox.com/asset/?id=8577523456"
 	}):tooltip("credits")
 
-
-        local changelogTabIcon = profile:object("ImageButton", { 
-                BackgroundTransparency = 1,
-                Theme = {ImageColor3 = "WeakText"},
-                Size = UDim2.fromOffset(24, 24),
-                Position = UDim2.new(1, -78, 1, -10), -- Adjust position 
-                AnchorPoint = Vector2.new(1, 1),
-                Image = "rbxassetid://8577523456" -- Replace with icon ID
-        }):tooltip("changelog")
-
 	local quickAccess = homePage:object("Frame", {
 		BackgroundTransparency = 1,
 		Size = UDim2.new(1, -20, 0, 180)
@@ -956,12 +946,6 @@ function Library:create(options)
 
 	return mt
 end
-
-        local changelogTab = Library.tab(mt, { -- Now changelogTabIcon is defined!
-        Name = "Changelog",
-        Internal = changelogTabIcon, 
-        Icon = "rbxassetid://8577523456" -- Replace with icon ID
-        })
 
 function Library:notification(options)
 	options = self:set_defaults({
