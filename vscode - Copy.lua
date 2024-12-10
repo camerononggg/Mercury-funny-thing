@@ -71,30 +71,9 @@ local Library = {
 			StrongText = Color3.fromHSV(0, 0, 1),        
 			WeakText = Color3.fromHSV(0, 0, 172/255)
 		},
-		Vaporwave = {
-			Main = Color3.fromRGB(19, 21, 21),
-			Secondary = Color3.fromRGB(65, 63, 63),
-			Tertiary = Color3.fromRGB(51, 153, 137),
-
-			StrongText = Color3.fromHSV(0, 0, 1),        
-			WeakText = Color3.fromHSV(0, 0, 172/255)
-		},
-		OperaGX = {
-			Main = Color3.fromRGB(19, 21, 21),
-			Secondary = Color3.fromRGB(65, 63, 63),
-			Tertiary = Color3.fromRGB(51, 153, 137),
-
-			StrongText = Color3.fromHSV(0, 0, 1),        
-			WeakText = Color3.fromHSV(0, 0, 172/255)
-		},
-		VisualStudio = {
-						Main = Color3.fromRGB(19, 21, 21),
-			Secondary = Color3.fromRGB(65, 63, 63),
-			Tertiary = Color3.fromRGB(51, 153, 137),
-
-			StrongText = Color3.fromHSV(0, 0, 1),        
-			WeakText = Color3.fromHSV(0, 0, 172/255)
-		},
+		Vaporwave = {},
+		OperaGX = {},
+		VisualStudio = {}
 	},
 	ColorPickerStyles = {
 		Legacy = 0,
@@ -2908,11 +2887,11 @@ function Library:_theme_selector()
 
 	local themeContainer = self.container:object("Frame", {
 		Theme = {BackgroundColor3 = "Secondary"},
-		Size = UDim2.new(1, -20, 0, 200)
+		Size = UDim2.new(1, -20, 0, 127)
 	}):round(7)
 
 	local text = themeContainer:object("TextLabel", {
-		BackgroundTransparency = 0.5,
+		BackgroundTransparency = 1,
 		Position = UDim2.fromOffset(10, 5),
 		Size = UDim2.new(0.5, -10, 0, 22),
 		Text = "Theme",
@@ -2922,15 +2901,15 @@ function Library:_theme_selector()
 	})
 
 	local colorThemesContainer = themeContainer:object("Frame", {
-		Size = UDim2.new(1, 0, 1, -62),
-		BackgroundTransparency = 0.5,
+		Size = UDim2.new(1, 0, 1, -32),
+		BackgroundTransparency = 1,
 		Position = UDim2.new(0.5, 0, 1, -5),
 		AnchorPoint = Vector2.new(0.5, 1)
 	})
 
 	local grid = colorThemesContainer:object("UIGridLayout", {
-		CellPadding = UDim2.fromOffset(5, 5),
-		CellSize = UDim2.fromOffset(144, 100),
+		CellPadding = UDim2.fromOffset(10, 10),
+		CellSize = UDim2.fromOffset(102, 83),
 		VerticalAlignment = Enum.VerticalAlignment.Center
 	})
 
@@ -2950,7 +2929,7 @@ function Library:_theme_selector()
 
 		if count >= 5 then
 			local theme = colorThemesContainer:object("TextButton", {
-				BackgroundTransparency = 0.5
+				BackgroundTransparency = 1
 			})
 
 			local themeColorsContainer = theme:object("Frame", {
