@@ -2900,7 +2900,7 @@ function Library:_theme_selector()
 	local text = themeContainer:object("TextLabel", {
 		BackgroundTransparency = 1,
 		Position = UDim2.fromOffset(10, 5),
-		Size = UDim2.new(1, -5, 1, 22),
+		Size = UDim2.new(1, -5, 1, 52),
 		Text = "Theme",
 		TextSize = 22,
 		Theme = {TextColor3 = "StrongText"},
