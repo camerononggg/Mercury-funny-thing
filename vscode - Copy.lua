@@ -2894,7 +2894,7 @@ function Library:_theme_selector()
 
 	local themeContainer = self.container:object("Frame", {
 		Theme = {BackgroundColor3 = "Secondary"},
-		Size = UDim2.new(1, -20, 0, 127)
+		Size = UDim2.new(1, -20, 0, 227)
 	}):round(7)
 
 	local text = themeContainer:object("TextLabel", {
@@ -2915,7 +2915,7 @@ function Library:_theme_selector()
 	})
 
 	local grid = colorThemesContainer:object("UIGridLayout", {
-		CellPadding = UDim2.fromOffset(20, 10),
+		CellPadding = UDim2.fromOffset(10, 10),
 		CellSize = UDim2.fromOffset(102, 83),
 		VerticalAlignment = Enum.VerticalAlignment.Center
 	})
