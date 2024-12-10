@@ -2929,7 +2929,7 @@ function Library:_theme_selector()
 	})
 
 	local grid = colorThemesContainer:object("UIGridLayout", {
-		CellPadding = UDim2.fromOffset(10, 10),
+		CellPadding = UDim2.fromOffset(20, 20),
 		CellSize = UDim2.fromOffset(144, 100),
 		VerticalAlignment = Enum.VerticalAlignment.Center
 	})
@@ -2950,7 +2950,7 @@ function Library:_theme_selector()
 
 		if count >= 5 then
 			local theme = colorThemesContainer:object("TextButton", {
-				BackgroundTransparency = 1
+				BackgroundTransparency = 0.5
 			})
 
 			local themeColorsContainer = theme:object("Frame", {
