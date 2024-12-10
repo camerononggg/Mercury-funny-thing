@@ -2894,13 +2894,13 @@ function Library:_theme_selector()
 
 	local themeContainer = self.container:object("Frame", {
 		Theme = {BackgroundColor3 = "Secondary"},
-		Size = UDim2.new(1, -20, 0, 227)
+		Size = UDim2.new(2, -40, 5, 227)
 	}):round(7)
 
 	local text = themeContainer:object("TextLabel", {
 		BackgroundTransparency = 1,
 		Position = UDim2.fromOffset(10, 5),
-		Size = UDim2.new(0.5, -10, 0, 22),
+		Size = UDim2.new(1, -20, 0, 52),
 		Text = "Theme",
 		TextSize = 22,
 		Theme = {TextColor3 = "StrongText"},
