@@ -93,7 +93,7 @@ local Library = {
 			Tertiary = Color3.fromRGB(51, 153, 137),
 
 			StrongText = Color3.fromHSV(0, 0, 1),        
-			WeakText = Color3.fromHSV(0, 0, 172/255)},
+			WeakText = Color3.fromHSV(0, 0, 172/255)
 		}
 	},
 	ColorPickerStyles = {
