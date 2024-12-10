@@ -2930,7 +2930,7 @@ function Library:_theme_selector()
 
 	local grid = colorThemesContainer:object("UIGridLayout", {
 		CellPadding = UDim2.fromOffset(10, 10),
-		CellSize = UDim2.fromOffset(102, 83),
+		CellSize = UDim2.fromOffset(144, 100),
 		VerticalAlignment = Enum.VerticalAlignment.Center
 	})
 
