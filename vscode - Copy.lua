@@ -64,6 +64,14 @@ local Library = {
 			WeakText = Color3.fromHSV(0, 0, 172/255)
 		},
 		Aqua = {
+			Main = Color3.fromRGB(19, 21, 21),
+			Secondary = Color3.fromRGB(65, 63, 63),
+			Tertiary = Color3.fromRGB(51, 153, 137),
+
+			StrongText = Color3.fromHSV(0, 0, 1),        
+			WeakText = Color3.fromHSV(0, 0, 172/255)
+		},
+		Christmas = {
 			Main = Color3.fromRGB(223, 219, 219),
 			Secondary = Color3.fromRGB(215, 165, 165),
 			Tertiary = Color3.fromRGB(0, 255, 0),
@@ -71,7 +79,6 @@ local Library = {
 			StrongText = Color3.fromHSV(255, 0, 0),        
 			WeakText = Color3.fromHSV(0, 255, 0)
 		},
-		Vaporwave = {},
 		OperaGX = {},
 		VisualStudio = {}
 	},
@@ -2908,7 +2915,7 @@ function Library:_theme_selector()
 	})
 
 	local grid = colorThemesContainer:object("UIGridLayout", {
-		CellPadding = UDim2.fromOffset(10, 10),
+		CellPadding = UDim2.fromOffset(20, 10),
 		CellSize = UDim2.fromOffset(102, 83),
 		VerticalAlignment = Enum.VerticalAlignment.Center
 	})
