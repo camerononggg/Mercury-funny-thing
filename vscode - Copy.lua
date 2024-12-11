@@ -71,7 +71,14 @@ local Library = {
 			StrongText = Color3.fromHSV(0, 0, 1),        
 			WeakText = Color3.fromHSV(0, 0, 172/255)
 		},
-		Vaporwave = {},
+		Festive = {
+			Main = Color3.fromRGB(223, 219, 219),
+			Secondary = Color3.fromRGB(215, 165, 165),
+			Tertiary = Color3.fromRGB(0, 255, 0),
+
+			StrongText = Color3.fromHSV(255, 0, 0),        
+			WeakText = Color3.fromHSV(0, 255, 0)
+		},
 		OperaGX = {},
 		VisualStudio = {}
 	},
