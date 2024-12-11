@@ -2901,7 +2901,7 @@ function Library:_theme_selector()
 	})
 
 	local colorThemesContainer = themeContainer:object("Frame", {
-		Size = UDim2.new(1, 0, 1, -32),
+		Size = UDim2.new(2, 0, 2, -64),
 		BackgroundTransparency = 1,
 		Position = UDim2.new(0.5, 0, 1, -5),
 		AnchorPoint = Vector2.new(0.5, 1)
