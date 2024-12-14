@@ -81,10 +81,10 @@ local Library = {
 		},
 		Swift = {
 			Main = Color3.fromRGB(20, 20, 20),
-			Secondary = Color3.fromRGB(58, 58, 58),
-			Tertiary = Color3.fromRGB(140, 103, 49),
+			Secondary = Color3.fromRGB(24, 24, 24),
+			Tertiary = Color3.fromRGB(251, 196, 112),
 
-			StrongText = Color3.fromHSV(0, 0, 1),		
+			StrongText = Color3.fromHSV(255, 255, 255),		
 			WeakText = Color3.fromHSV(0, 0, 172/255)
 		},
 		VisualStudio = {}
