@@ -80,9 +80,9 @@ local Library = {
 			WeakText = Color3.fromHSV(0, 255, 0)
 		},
 		Swift = {
-			Main = Color3.fromRGB(19, 21, 21),
-			Secondary = Color3.fromRGB(65, 63, 63),
-			Tertiary = Color3.fromRGB(51, 153, 137),
+			Main = Color3.fromRGB(20, 20, 20),
+			Secondary = Color3.fromRGB(24, 24, 24),
+			Tertiary = Color3.fromRGB(251, 196, 112),
 
 			StrongText = Color3.fromHSV(0, 0, 1),		
 			WeakText = Color3.fromHSV(0, 0, 172/255)
