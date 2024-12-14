@@ -84,7 +84,7 @@ local Library = {
 			Secondary = Color3.fromRGB(24, 24, 24),
 			Tertiary = Color3.fromRGB(251, 196, 112),
 
-			StrongText = Color3.fromHSV(255, 255, 255),		
+			StrongText = Color3.fromHSV(251, 196, 112),		
 			WeakText = Color3.fromHSV(0, 0, 172/255)
 		},
 		VisualStudio = {}
