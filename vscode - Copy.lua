@@ -10,7 +10,7 @@
 █░░▄▀░░██░░░░░░██░░▄▀░░█░░▄▀░░░░░░░░░░█░░▄▀░░yue<3▀░░░░███░░▄▀░░█████████░░▄▀░░██░░▄▀░░█░░▄▀░░░░░░▄▀░░░░█████████░░▄▀░░███████
 █░░▄▀░░██████████░░▄▀░░█░░▄▀░░█████████░░▄▀░░██░░▄▀░░█████░░▄▀░░█████████░░▄▀░░██░░▄▀░░█░░▄▀░░██░░▄▀░░███████████░░▄▀░░███████
 █░░▄▀░░██████████░░▄▀░░█░░▄▀░░░░░░░░░░█░░▄▀░░██░░▄▀░░░░░░█░░▄▀░░░░░░░░░░█░░▄▀░░░░░░▄▀░░█░░▄▀░░██░░▄▀░░░░░░███████░░▄▀░░███████
-█░░▄▀░░██████████░░▄▀░░█░░▄▀▄▀▄▀▄▀▄▀░░█░░▄▀░░██░░▄▀▄▀▄▀░░█░░▄▀▄▀▄▀▄▀▄▀░░█░░▄▀▄▀▄▀▄▀▄▀░░█░░▄▀░░██░░▄▀▄▀▄▀░░███████░░▄▀░░███████
+█░░▄▀░░██████████░░▄▀░░█░░▄▀▄▀▄▀▄▀▄▀░░█░░▄▀░░██░░▄▀▄▀▄▀░░█░░▄▀▄▀▄▀▄▀░░█░░▄▀▄▀▄▀▄▀▄▀░░█░░▄▀░░██░░▄▀▄▀▄▀░░███████░░▄▀░░███████
 █░░░░░░██████████░░░░░░█░░░░░░░░░░░░░░█░░░░░░██░░░░░░░░░░█░░░░░░░░░░░░░░█░░░░░░░░░░░░░░█░░░░░░██░░░░░░░░░░███████░░░░░░███████
 ██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████
 
@@ -36,7 +36,7 @@ local Library = {
 			Secondary = Color3.fromHSV(240/360, 40/255, 63/255),
 			Tertiary = Color3.fromHSV(260/360, 60/255, 148/255),
 
-			StrongText = Color3.fromHSV(0, 0, 1),		
+			StrongText = Color3.fromHSV(0, 0, 1),
 			WeakText = Color3.fromHSV(0, 0, 172/255)
 		},
 		Serika = {
@@ -44,7 +44,7 @@ local Library = {
 			Secondary = Color3.fromRGB(80, 82, 85),
 			Tertiary = Color3.fromRGB(226, 183, 20),
 
-			StrongText = Color3.fromHSV(0, 0, 1),		
+			StrongText = Color3.fromHSV(0, 0, 1),
 			WeakText = Color3.fromHSV(0, 0, 172/255)
 		},
 		Dark = {
@@ -52,7 +52,7 @@ local Library = {
 			Secondary = Color3.fromRGB(50, 50, 55),
 			Tertiary = Color3.fromRGB(70, 130, 180),
 
-			StrongText = Color3.fromHSV(0, 0, 1),		
+			StrongText = Color3.fromHSV(0, 0, 1),
 			WeakText = Color3.fromHSV(0, 0, 172/255)
 		},
 		Rust = {
@@ -60,7 +60,7 @@ local Library = {
 			Secondary = Color3.fromRGB(65, 63, 63),
 			Tertiary = Color3.fromRGB(237, 94, 38),
 
-			StrongText = Color3.fromHSV(0, 0, 1),		
+			StrongText = Color3.fromHSV(0, 0, 1),
 			WeakText = Color3.fromHSV(0, 0, 172/255)
 		},
 		Aqua = {
@@ -68,7 +68,7 @@ local Library = {
 			Secondary = Color3.fromRGB(65, 63, 63),
 			Tertiary = Color3.fromRGB(51, 153, 137),
 
-			StrongText = Color3.fromHSV(0, 0, 1),        
+			StrongText = Color3.fromHSV(0, 0, 1),
 			WeakText = Color3.fromHSV(0, 0, 172/255)
 		},
 		Festive = {
@@ -76,7 +76,7 @@ local Library = {
 			Secondary = Color3.fromRGB(215, 165, 165),
 			Tertiary = Color3.fromRGB(0, 255, 0),
 
-			StrongText = Color3.fromHSV(255, 0, 0),        
+			StrongText = Color3.fromHSV(255, 0, 0),
 			WeakText = Color3.fromHSV(0, 255, 0)
 		},
 		Swift = {
@@ -84,7 +84,7 @@ local Library = {
 			Secondary = Color3.fromRGB(24, 24, 24),
 			Tertiary = Color3.fromRGB(251, 196, 112),
 
-			StrongText = Color3.fromHSV(0, 0, 1),		
+			StrongText = Color3.fromHSV(0, 0, 1),
 			WeakText = Color3.fromHSV(0, 0, 172/255)
 		},
 		VisualStudio = {}
@@ -180,7 +180,7 @@ function Library:object(class, properties)
 
 		local ti = TweenInfo.new(options.Length, options.Style, options.Direction)
 		options.Length = nil
-		options.Style = nil 
+		options.Style = nil
 		options.Direction = nil
 
 		local tween = TweenService:Create(localObject, ti, options); tween:Play()
@@ -247,7 +247,7 @@ function Library:object(class, properties)
 					self.fadeFrame.Visible = false
 				end)
 			end
-		end	
+		end
 	end
 
 	function methods:stroke(color, thickness, strokeMode)
@@ -334,7 +334,7 @@ function Library:object(class, properties)
 			if value then
 				localObject.AnchorPoint = Vector2.new(0.5, 0.5)
 				localObject.Position = UDim2.fromScale(0.5, 0.5)
-			end	
+			end
 		end,
 		Theme = function(value)
 			for property, obj in next, value do
@@ -386,7 +386,7 @@ function Library:show(state)
 		end)
 		wait(0.15)
 		self.mainFrame:fade(not state, self.mainFrame.BackgroundColor3, 0.15)
-	else		
+	else
 		self.mainFrame:fade(not state, self.mainFrame.BackgroundColor3, 0.15)
 		wait(0.1)
 		self.mainFrame:tween{Size = UDim2.new(), Length = 0.25}
@@ -418,7 +418,7 @@ end
 		f = f or 15
 		return Color3.fromHSV(h, s, math.clamp(v + (f/255), 0, 1))
 	end
-	
+
 ]]
 
 local updateSettings = function() end
@@ -490,7 +490,7 @@ function Library:create(options)
 		Size = UDim2.new(),
 		Theme = {BackgroundColor3 = "Main"},
 		Centered = true,
-		ClipsDescendants = true		
+		ClipsDescendants = true
 	}):round(10)
 
 	core:fade(true, nil, 0.2, true)
@@ -524,16 +524,16 @@ function Library:create(options)
 							else
 								core:tween{
 									Position = UDim2.fromOffset(Mouse.X - ObjectPosition.X + (core.Size.X.Offset * core.AnchorPoint.X), Mouse.Y - ObjectPosition.Y + (core.Size.Y.Offset * core.AnchorPoint.Y)),
-									Length = Library.DragSpeed	
+									Length = Library.DragSpeed
 								}
-							end	
+							end
 							--[[core.AbsoluteObject:TweenPosition(
-								UDim2.new(0, Mouse.X - ObjectPosition.X + (core.Size.X.Offset * core.AnchorPoint.X), 0, Mouse.Y - ObjectPosition.Y + (core.Size.Y.Offset * core.AnchorPoint.Y)),           
+								UDim2.new(0, Mouse.X - ObjectPosition.X + (core.Size.X.Offset * core.AnchorPoint.X), 0, Mouse.Y - ObjectPosition.Y + (core.Size.Y.Offset * core.AnchorPoint.Y)),
 								Enum.EasingDirection.In,
 								Enum.EasingStyle.Sine,
 								Library.DragSpeed,
 								true
-								
+
 								--
 								core:tween{
 								Position = UDim2.new(0, Mouse.X - ObjectPosition.X + (core.Size.X.Offset * core.AnchorPoint.X), 0, Mouse.Y - ObjectPosition.Y + (core.Size.Y.Offset * core.AnchorPoint.Y)),
@@ -827,7 +827,7 @@ function Library:create(options)
 		local desiredInterval = 1
 		local counter = 0
 		RunService.Heartbeat:Connect(function(step)
-			counter += step  
+			counter += step
 			if counter >= desiredInterval then
 				counter -= desiredInterval
 				local date = tostring(os.date("%X"))
@@ -860,7 +860,7 @@ function Library:create(options)
 		Size = UDim2.fromOffset(24, 24),
 		Position = UDim2.new(1, -78, 1, -10),
 		AnchorPoint = Vector2.new(1, 1),
-		Image = "http://www.roblox.com/asset/?id=8577523456"
+		Image = "http://www.roblox.com/asset/?id=12264831323"
 	}):tooltip("changelog")
 
 	local quickAccess = homePage:object("Frame", {
@@ -949,12 +949,13 @@ function Library:create(options)
 	local changelogTab = Library.tab(mt, {
 		Name = "Changelog",
 		Internal = changelogTabIcon,
-		Icon = "http://www.roblox.com/asset/?id=5938204892"
+		Icon = "http://www.roblox.com/asset/?id=12264831323"
 	})
-	changelogTab:label({
-		Text = "Changelog",
-		Description = "No changes yet."
-	})
+
+	changelogTab:label{
+		Text = "v1.0.0",
+		Description = "- Added changelog tab"
+	}
 
 	return mt
 end
@@ -1208,7 +1209,7 @@ function Library:tab(options)
 				tabButton.Parent = self.navigation.AbsoluteObject
 				tabButton.Size = UDim2.new(0, 50, tabButton.Size.Y.Scale, tabButton.Size.Y.Offset)
 				tabButton.Visible = true
-				tabButton:fade(false, Library.CurrentTheme.Main, 0.1)			
+				tabButton:fade(false, Library.CurrentTheme.Main, 0.1)
 				tabButton:tween({Size = UDim2.new(0, 125, tabButton.Size.Y.Scale, tabButton.Size.Y.Offset), Length = 0.1})
 				for _, tabInfo in next, self.Tabs do
 					local page = tabInfo[1]
@@ -1282,7 +1283,7 @@ function Library:tab(options)
 			self.homePage.Visible = true
 			self.homeButton:tween{BackgroundTransparency = 0.15}
 			selectedTab = self.homeButton
-			Library.UrlLabel.Text = Library.Url .. "/home"	
+			Library.UrlLabel.Text = Library.Url .. "/home"
 		elseif tabButton == lastTab[2] then
 			lastTab = visible[#visible-1]
 			tab.Visible = false
@@ -1554,7 +1555,7 @@ function Library:dropdown(options)
 			TextSize = 14
 		}):round(5)
 
-		items[i] = {{label, value}, newItem} 
+		items[i] = {{label, value}, newItem}
 
 		do
 			local hovered = false
@@ -1742,7 +1743,7 @@ function Library:dropdown(options)
 					selectedText:tween{Size = UDim2.fromOffset(selectedText.TextBounds.X + 20, 20), Length = 0.05}
 					options.Callback(value)
 				end)
-			end		
+			end
 		end
 
 		Library._resize_tab({
@@ -2801,11 +2802,11 @@ function Library:credit(options)
 			TextXAlignment = Enum.TextXAlignment.Left
 		})
 	end
-	
-	
+
+
 
 	if setclipboard then
-	
+
 		if options.Github then
 			local githubContainer = creditContainer:object("TextButton", {
 				AnchorPoint = Vector2.new(1, 1),
@@ -2824,7 +2825,7 @@ function Library:credit(options)
 				setclipboard(options.Github)
 			end)
 		end
-	
+
 		if options.Discord then
 			local discordContainer = creditContainer:object("TextButton", {
 				AnchorPoint = Vector2.new(1, 1),
@@ -3594,4 +3595,3 @@ return setmetatable(Library, {
 		return rawget(Library, i:lower())
 	end
 })
-
