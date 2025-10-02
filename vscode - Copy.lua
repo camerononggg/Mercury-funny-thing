@@ -854,6 +854,15 @@ function Library:create(options)
 		Image = "http://www.roblox.com/asset/?id=8577523456"
 	}):tooltip("credits")
 
+	local changelogTabIcon = profile:object("ImageButton", {
+		BackgroundTransparency = 1,
+		Theme = {ImageColor3 = "WeakText"},
+		Size = UDim2.fromOffset(24, 24),
+		Position = UDim2.new(1, -78, 1, -10),
+		AnchorPoint = Vector2.new(1, 1),
+		Image = "http://www.roblox.com/asset/?id=5938204892"
+	}):tooltip("changelog")
+
 	local quickAccess = homePage:object("Frame", {
 		BackgroundTransparency = 1,
 		Size = UDim2.new(1, -20, 0, 180)
@@ -936,6 +945,16 @@ function Library:create(options)
 	creditsTab:credit{Name = "Abstract", Description = "UI Library Developer", Discord = "Abstract#8007", V3rmillion = "AbstractPoo"}
 	creditsTab:credit{Name = "Deity", Description = "UI Library Developer", Discord = "Deity#0228", V3rmillion = "0xDEITY"}
 	creditsTab:credit{Name = "Repository", Description = "UI Library Repository", Github="https://github.com/deeeity/mercury-lib/blob/master/src.lua"}
+
+	local changelogTab = Library.tab(mt, {
+		Name = "Changelog",
+		Internal = changelogTabIcon,
+		Icon = "http://www.roblox.com/asset/?id=5938204892"
+	})
+	changelogTab:label({
+		Text = "Changelog",
+		Description = "No changes yet."
+	})
 
 	return mt
 end
