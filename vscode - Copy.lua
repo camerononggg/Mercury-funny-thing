@@ -957,6 +957,16 @@ function Library:create(options)
 		Description = "- Added changelog tab"
 	}
 
+	changelogTab:label{
+		Text = "v1.0.1",
+		Description = "- Fixed a bug where the UI would not open"
+	}
+
+	changelogTab:label{
+		Text = "v1.0.2",
+		Description = "- Added a new theme"
+	}
+
 	return mt
 end
 
