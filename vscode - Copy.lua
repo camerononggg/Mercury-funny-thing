@@ -860,7 +860,7 @@ function Library:create(options)
 		Size = UDim2.fromOffset(24, 24),
 		Position = UDim2.new(1, -78, 1, -10),
 		AnchorPoint = Vector2.new(1, 1),
-		Image = "http://www.roblox.com/asset/?id=5938204892"
+		Image = "http://www.roblox.com/asset/?id=8577523456"
 	}):tooltip("changelog")
 
 	local quickAccess = homePage:object("Frame", {
@@ -3594,3 +3594,4 @@ return setmetatable(Library, {
 		return rawget(Library, i:lower())
 	end
 })
+
