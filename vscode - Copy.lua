@@ -427,6 +427,88 @@ function Library:set_status(txt)
 	self.statusText.Text = txt
 end
 
+function Library:_reorderTabStrip(navInst, draggedInst, mouseX)
+	local tabs = {}
+	for _, c in ipairs(navInst:GetChildren()) do
+		if c:IsA("GuiButton") and c.Visible then
+			tabs[#tabs + 1] = c
+		end
+	end
+	table.sort(tabs, function(a, b)
+		return a.LayoutOrder < b.LayoutOrder
+	end)
+
+	local others = {}
+	for _, b in ipairs(tabs) do
+		if b ~= draggedInst then
+			others[#others + 1] = b
+		end
+	end
+
+	local target = #others + 1
+	for i, b in ipairs(others) do
+		local midX = b.AbsolutePosition.X + b.AbsoluteSize.X * 0.5
+		if mouseX < midX then
+			target = i
+			break
+		end
+	end
+
+	table.insert(others, target, draggedInst)
+	for i, b in ipairs(others) do
+		b.LayoutOrder = i
+	end
+end
+
+function Library:_hookTabStripReorder(window, tabButtonWrapper)
+	local navInst = window.navigation.AbsoluteObject
+	local btnInst = tabButtonWrapper.AbsoluteObject
+
+	btnInst.MouseButton1Down:Connect(function()
+		local startPos = UserInputService:GetMouseLocation()
+		local dragging = false
+		local hbConn, endedConn
+		local scrollWasEnabled = navInst.ScrollingEnabled
+
+		local function finish()
+			if hbConn then
+				hbConn:Disconnect()
+				hbConn = nil
+			end
+			if endedConn then
+				endedConn:Disconnect()
+				endedConn = nil
+			end
+			navInst.ScrollingEnabled = scrollWasEnabled
+			btnInst.ZIndex = 1
+		end
+
+		-- Heartbeat polling: InputChanged(MouseMovement) is often missing or sparse over CoreGui / some clients.
+		hbConn = RunService.Heartbeat:Connect(function()
+			if not UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
+				return
+			end
+			local pos = UserInputService:GetMouseLocation()
+			if not dragging then
+				if (Vector2.new(pos.X, pos.Y) - Vector2.new(startPos.X, startPos.Y)).Magnitude > 6 then
+					dragging = true
+					btnInst.ZIndex = 50
+					navInst.ScrollingEnabled = false
+				end
+			end
+			if dragging then
+				self:_reorderTabStrip(navInst, btnInst, pos.X)
+			end
+		end)
+
+		endedConn = UserInputService.InputEnded:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 then
+				finish()
+			end
+		end)
+	end)
+end
+
 function Library:create(options)
 
 	local settings = {
@@ -501,17 +583,44 @@ function Library:create(options)
 		core.ClipsDescendants = false
 	end)
 
+	rawset(core, "oldSize", options.Size)
+
+	self.mainFrame = core
+
+	local tabButtons = core:object("ScrollingFrame", {
+		Size = UDim2.new(1, -40, 0, 25),
+		Position = UDim2.fromOffset(5, 5),
+		BackgroundTransparency = 1,
+		ClipsDescendants = true,
+		ScrollBarThickness = 0,
+		ScrollingDirection = Enum.ScrollingDirection.X,
+		AutomaticCanvasSize = Enum.AutomaticSize.X
+	})
+
+	tabButtons:object("UIListLayout", {
+		FillDirection = Enum.FillDirection.Horizontal,
+		HorizontalAlignment = Enum.HorizontalAlignment.Left,
+		SortOrder = Enum.SortOrder.LayoutOrder,
+		Padding = UDim.new(0, 4)
+	})
+
 	do
 		local S, Event = pcall(function()
 			return core.MouseEnter
 		end)
 
 		if S then
-			core.Active = true;
+			core.Active = true
 
 			Event:connect(function()
 				local Input = core.InputBegan:connect(function(Key)
 					if Key.UserInputType == Enum.UserInputType.MouseButton1 then
+						local m = UserInputService:GetMouseLocation()
+						local ap = tabButtons.AbsolutePosition
+						local as = tabButtons.AbsoluteSize
+						if m.X >= ap.X and m.X <= ap.X + as.X and m.Y >= ap.Y and m.Y <= ap.Y + as.Y then
+							return
+						end
 						local ObjectPosition = Vector2.new(Mouse.X - core.AbsolutePosition.X, Mouse.Y - core.AbsolutePosition.Y)
 						while RunService.RenderStepped:wait() and UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
 
@@ -524,24 +633,9 @@ function Library:create(options)
 							else
 								core:tween{
 									Position = UDim2.fromOffset(Mouse.X - ObjectPosition.X + (core.Size.X.Offset * core.AnchorPoint.X), Mouse.Y - ObjectPosition.Y + (core.Size.Y.Offset * core.AnchorPoint.Y)),
-									Length = Library.DragSpeed	
+									Length = Library.DragSpeed
 								}
-							end	
-							--[[core.AbsoluteObject:TweenPosition(
-								UDim2.new(0, Mouse.X - ObjectPosition.X + (core.Size.X.Offset * core.AnchorPoint.X), 0, Mouse.Y - ObjectPosition.Y + (core.Size.Y.Offset * core.AnchorPoint.Y)),           
-								Enum.EasingDirection.In,
-								Enum.EasingStyle.Sine,
-								Library.DragSpeed,
-								true
-								
-								--
-								core:tween{
-								Position = UDim2.new(0, Mouse.X - ObjectPosition.X + (core.Size.X.Offset * core.AnchorPoint.X), 0, Mouse.Y - ObjectPosition.Y + (core.Size.Y.Offset * core.AnchorPoint.Y)),
-								Direction = Enum.EasingDirection.Out,
-								Style = Enum.EasingStyle.Quad,
-								Length = Library.DragSpeed
-							}
-							)]]
+							end
 						end
 					end
 				end)
@@ -554,6 +648,27 @@ function Library:create(options)
 			end)
 		end
 	end
+
+	rawset(core, "oldSize", options.Size)
+
+	self.mainFrame = core
+
+	local tabButtons = core:object("ScrollingFrame", {
+		Size = UDim2.new(1, -40, 0, 25),
+		Position = UDim2.fromOffset(5, 5),
+		BackgroundTransparency = 1,
+		ClipsDescendants = true,
+		ScrollBarThickness = 0,
+		ScrollingDirection = Enum.ScrollingDirection.X,
+		AutomaticCanvasSize = Enum.AutomaticSize.X
+	})
+
+	tabButtons:object("UIListLayout", {
+		FillDirection = Enum.FillDirection.Horizontal,
+		HorizontalAlignment = Enum.HorizontalAlignment.Left,
+		SortOrder = Enum.SortOrder.LayoutOrder,
+		Padding = UDim.new(0, 4)
+	})
 
 	rawset(core, "oldSize", options.Size)
 
@@ -682,7 +797,8 @@ function Library:create(options)
 		Name = "hehehe siuuuuuuuuu",
 		BackgroundTransparency = 0,
 		Theme = {BackgroundColor3 = "Secondary"},
-		Size = UDim2.new(0, 125, 0, 25)
+		Size = UDim2.new(0, 125, 0, 25),
+		LayoutOrder = 1
 	}):round(5)
 
 	local homeButtonText = homeButton:object("TextLabel", {
@@ -706,6 +822,19 @@ function Library:create(options)
 		Image = "http://www.roblox.com/asset/?id=8569322835",
 		Theme = {ImageColor3 = "StrongText"}
 	})
+
+	pcall(function()
+		homeButtonText.Active = false
+	end)
+	pcall(function()
+		homeButtonIcon.Active = false
+	end)
+	pcall(function()
+		homeButtonText.Interactable = false
+	end)
+	pcall(function()
+		homeButtonIcon.Interactable = false
+	end)
 
 	local homePage = content:object("Frame", {
 		Size = UDim2.fromScale(1, 1),
@@ -897,6 +1026,8 @@ function Library:create(options)
 		nilFolder = core:object("Folder"),
 	}, Library)
 
+	Library:_hookTabStripReorder(mt, homeButton)
+
 	local changelogTab = Library.tab(mt, {
 		Name = "Changelog",
 		Internal = changelogTabIcon,
@@ -905,6 +1036,8 @@ function Library:create(options)
 
 	do
 		local sec = changelogTab:section{Name = "2026-04-12"}
+		sec:label{Text = "Tab bar: drag to reorder", Description = "Reorder uses Heartbeat + LayoutOrder; scrolling pauses while dragging. Icon/title no longer steal clicks from the tab button."}
+		sec:label{Text = "Window drag vs tab strip", Description = "Clicks on the tab strip no longer start moving the whole window."}
 		sec:label{Text = "Hello, world", Description = "Placeholder release notes for the UI shell."}
 		sec:label{Text = "Another line", Description = "Nothing to see here yet."}
 	end
@@ -1218,6 +1351,13 @@ function Library:tab(options)
 		quickAccessButton.MouseButton1Click:connect(function()
 			if not tabButton.Visible then
 				tabButton.Parent = self.navigation.AbsoluteObject
+				local maxO = 0
+				for _, c in ipairs(self.navigation.AbsoluteObject:GetChildren()) do
+					if c:IsA("GuiButton") and c.Visible and c ~= tabButton.AbsoluteObject then
+						maxO = math.max(maxO, c.LayoutOrder)
+					end
+				end
+				tabButton.LayoutOrder = maxO + 1
 				tabButton.Size = UDim2.new(0, 50, tabButton.Size.Y.Scale, tabButton.Size.Y.Offset)
 				tabButton.Visible = true
 				tabButton:fade(false, Library.CurrentTheme.Main, 0.1)			
@@ -1257,6 +1397,19 @@ function Library:tab(options)
 		Image = options.Icon,
 		Theme = {ImageColor3 = "StrongText"}
 	})
+
+	pcall(function()
+		tabButtonText.Active = false
+	end)
+	pcall(function()
+		tabButtonIcon.Active = false
+	end)
+	pcall(function()
+		tabButtonText.Interactable = false
+	end)
+	pcall(function()
+		tabButtonIcon.Interactable = false
+	end)
 
 	local tabButtonClose = tabButton:object("ImageButton", {
 		AnchorPoint = Vector2.new(1, 0.5),
@@ -1310,6 +1463,8 @@ function Library:tab(options)
 			Library.UrlLabel.Text = Library.Url .. "/" .. lastTab[3]:lower()
 		end
 	end)
+
+	Library:_hookTabStripReorder(self, tabButton)
 
 	return setmetatable({
 		statusText = self.statusText,
