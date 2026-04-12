@@ -164,6 +164,7 @@ function Library:change_theme(toTheme)
 				local ug = inst:FindFirstChild("MercuryThemeGradient")
 				if Library.is_gradient_slot(slotVal) then
 					inst.BackgroundColor3 = Color3.new(1, 1, 1)
+					inst.BackgroundTransparency = 0
 					if not ug then
 						ug = Instance.new("UIGradient")
 						ug.Name = "MercuryThemeGradient"
@@ -378,6 +379,7 @@ function Library:object(class, properties)
 				local slotVal = Library.CurrentTheme[themeKey]
 				if property == "BackgroundColor3" and Library.is_gradient_slot(slotVal) then
 					localObject.BackgroundColor3 = Color3.new(1, 1, 1)
+					localObject.BackgroundTransparency = 0
 					local ug = Instance.new("UIGradient")
 					ug.Name = "MercuryThemeGradient"
 					ug.Parent = localObject
@@ -733,27 +735,6 @@ function Library:create(options)
 			end)
 		end
 	end
-
-	rawset(core, "oldSize", options.Size)
-
-	self.mainFrame = core
-
-	local tabButtons = core:object("ScrollingFrame", {
-		Size = UDim2.new(1, -40, 0, 25),
-		Position = UDim2.fromOffset(5, 5),
-		BackgroundTransparency = 1,
-		ClipsDescendants = true,
-		ScrollBarThickness = 0,
-		ScrollingDirection = Enum.ScrollingDirection.X,
-		AutomaticCanvasSize = Enum.AutomaticSize.X
-	})
-
-	tabButtons:object("UIListLayout", {
-		FillDirection = Enum.FillDirection.Horizontal,
-		HorizontalAlignment = Enum.HorizontalAlignment.Left,
-		SortOrder = Enum.SortOrder.LayoutOrder,
-		Padding = UDim.new(0, 4)
-	})
 
 	rawset(core, "oldSize", options.Size)
 
