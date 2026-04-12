@@ -836,6 +836,15 @@ function Library:create(options)
 		end)
 	end
 
+	local changelogTabIcon = profile:object("ImageButton", {
+		BackgroundTransparency = 1,
+		Theme = {ImageColor3 = "WeakText"},
+		Size = UDim2.fromOffset(24, 24),
+		Position = UDim2.new(1, -78, 1, -10),
+		AnchorPoint = Vector2.new(1, 1),
+		Image = "rbxassetid://8579244616"
+	}):tooltip("changelog")
+
 	local settingsTabIcon = profile:object("ImageButton", {
 		BackgroundTransparency = 1,
 		Theme = {ImageColor3 = "WeakText"},
@@ -887,6 +896,28 @@ function Library:create(options)
 		homePage = homePage,
 		nilFolder = core:object("Folder"),
 	}, Library)
+
+	local changelogTab = Library.tab(mt, {
+		Name = "Changelog",
+		Internal = changelogTabIcon,
+		Icon = "rbxassetid://8579244616"
+	})
+
+	do
+		local sec = changelogTab:section{Name = "2026-04-12"}
+		sec:label{Text = "Hello, world", Description = "Placeholder release notes for the UI shell."}
+		sec:label{Text = "Another line", Description = "Nothing to see here yet."}
+	end
+
+	do
+		local sec = changelogTab:section{Name = "2026-03-01"}
+		sec:label{Text = "Hello, world (again)", Description = "Fake date, fake entry — swap with real notes later."}
+	end
+
+	do
+		local sec = changelogTab:section{Name = "2026-01-15"}
+		sec:label{Text = "Initial hello", Description = "hello world x3"}
+	end
 
 	local settingsTab = Library.tab(mt, {
 		Name = "Settings",
