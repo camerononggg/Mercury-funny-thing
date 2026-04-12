@@ -95,8 +95,8 @@ local Library = {
 			StrongText = Color3.fromRGB(246, 250, 255),
 			WeakText = Color3.fromRGB(148, 162, 192),
 			SlotTransparency = {
-				Main = 0.1,
-				Secondary = 0.38,
+				Main = 0.5,
+				Secondary = 0.5,
 			},
 		},
 		VisualStudio = {}
