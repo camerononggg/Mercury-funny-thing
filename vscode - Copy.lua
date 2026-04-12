@@ -87,6 +87,18 @@ local Library = {
 			StrongText = Color3.fromHSV(0, 0, 1),		
 			WeakText = Color3.fromHSV(0, 0, 172/255)
 		},
+		-- Optional SlotTransparency: per-slot BackgroundTransparency (0–1) for a glass / frosted look
+		Frost = {
+			Main = Color3.fromRGB(18, 24, 36),
+			Secondary = Color3.fromRGB(42, 52, 72),
+			Tertiary = Color3.fromRGB(118, 214, 255),
+			StrongText = Color3.fromRGB(246, 250, 255),
+			WeakText = Color3.fromRGB(148, 162, 192),
+			SlotTransparency = {
+				Main = 0.1,
+				Secondary = 0.38,
+			},
+		},
 		VisualStudio = {}
 	},
 	ColorPickerStyles = {
@@ -102,6 +114,8 @@ local Library = {
 		StrongText = {},
 		WeakText = {}
 	},
+	-- { guiWrapper, slotName } — BackgroundColor3 elements that follow SlotTransparency on the active theme
+	ThemeTransparencyObjects = {},
 	WelcomeText = nil,
 	DisplayName = nil,
 	DragSpeed = 0.06,
@@ -146,6 +160,12 @@ function Library:change_theme(toTheme)
 			end
 			element:tween{[property] = modifiedColor}
 		end
+	end
+	local st = toTheme.SlotTransparency
+	for _, entry in ipairs(Library.ThemeTransparencyObjects) do
+		local element, themeKey = entry[1], entry[2]
+		local trans = (st and st[themeKey] ~= nil) and st[themeKey] or 0
+		element:tween({BackgroundTransparency = trans})
 	end
 end
 
@@ -338,21 +358,27 @@ function Library:object(class, properties)
 		end,
 		Theme = function(value)
 			for property, obj in next, value do
+				local themeKey, colorAlter
 				if type(obj) == "table" then
-					local theme, colorAlter = obj[1], obj[2] or 0
-					local themeColor = Library.CurrentTheme[theme]
-					local modifiedColor = themeColor
-					if colorAlter < 0 then
-						modifiedColor = Library:darken(themeColor, -1 * colorAlter)
-					elseif colorAlter > 0 then
-						modifiedColor = Library:lighten(themeColor, colorAlter)
-					end
-					localObject[property] = modifiedColor
-					table.insert(self.ThemeObjects[theme], {methods, property, theme, colorAlter})
+					themeKey, colorAlter = obj[1], obj[2] or 0
 				else
-					local themeColor = Library.CurrentTheme[obj]
-					localObject[property] = themeColor
-					table.insert(self.ThemeObjects[obj], {methods, property, obj, 0})
+					themeKey, colorAlter = obj, 0
+				end
+				local themeColor = Library.CurrentTheme[themeKey]
+				local modifiedColor = themeColor
+				if colorAlter < 0 then
+					modifiedColor = Library:darken(themeColor, -1 * colorAlter)
+				elseif colorAlter > 0 then
+					modifiedColor = Library:lighten(themeColor, colorAlter)
+				end
+				localObject[property] = modifiedColor
+				table.insert(self.ThemeObjects[themeKey], {methods, property, themeKey, colorAlter})
+				if property == "BackgroundColor3" then
+					local slotTrans = Library.CurrentTheme.SlotTransparency
+					if slotTrans and slotTrans[themeKey] ~= nil then
+						localObject.BackgroundTransparency = slotTrans[themeKey]
+						table.insert(Library.ThemeTransparencyObjects, {methods, themeKey})
+					end
 				end
 			end
 		end,
@@ -510,6 +536,8 @@ function Library:_hookTabStripReorder(window, tabButtonWrapper)
 end
 
 function Library:create(options)
+
+	Library.ThemeTransparencyObjects = {}
 
 	local settings = {
 		Theme = "Dark"
@@ -1036,6 +1064,7 @@ function Library:create(options)
 
 	do
 		local sec = changelogTab:section{Name = "2026-04-12"}
+		sec:label{Text = "Theme: Frost (glass)", Description = "Optional SlotTransparency on a theme tints Main/Secondary panels; see Library.Themes.Frost. No ColorSequence."}
 		sec:label{Text = "Tab bar: drag to reorder", Description = "Reorder uses Heartbeat + LayoutOrder; scrolling pauses while dragging. Icon/title no longer steal clicks from the tab button."}
 		sec:label{Text = "Window drag vs tab strip", Description = "Clicks on the tab strip no longer start moving the whole window."}
 		sec:label{Text = "Hello, world", Description = "Placeholder release notes for the UI shell."}
@@ -3158,6 +3187,16 @@ function Library:_theme_selector()
 				Size = UDim2.new(1, -16, 1, -16),
 				BackgroundColor3 = themeColors.Secondary
 			}):round(4)
+
+			local slotT = themeColors.SlotTransparency
+			if slotT then
+				if slotT.Main ~= nil then
+					colorMain.BackgroundTransparency = slotT.Main
+				end
+				if slotT.Secondary ~= nil then
+					colorSecondary.BackgroundTransparency = slotT.Secondary
+				end
+			end
 
 			colorSecondary:object("UIListLayout", {
 				Padding = UDim.new(0, 5)
