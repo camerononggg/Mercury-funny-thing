@@ -87,6 +87,27 @@ local Library = {
 			StrongText = Color3.fromHSV(0, 0, 1),		
 			WeakText = Color3.fromHSV(0, 0, 172/255)
 		},
+		-- Main/Secondary may be { Sequence = ColorSequence (from keypoints), Rotation = degrees }
+		Gradient = {
+			Main = {
+				Rotation = 95,
+				Sequence = ColorSequence.new(
+					ColorSequenceKeypoint.new(0, Color3.fromRGB(24, 18, 52)),
+					ColorSequenceKeypoint.new(0.5, Color3.fromRGB(62, 34, 112)),
+					ColorSequenceKeypoint.new(1, Color3.fromRGB(16, 72, 96))
+				),
+			},
+			Secondary = {
+				Rotation = 40,
+				Sequence = ColorSequence.new(
+					ColorSequenceKeypoint.new(0, Color3.fromRGB(34, 30, 54)),
+					ColorSequenceKeypoint.new(1, Color3.fromRGB(30, 48, 74))
+				),
+			},
+			Tertiary = Color3.fromRGB(255, 154, 92),
+			StrongText = Color3.fromRGB(248, 248, 255),
+			WeakText = Color3.fromRGB(158, 172, 210),
+		},
 		VisualStudio = {}
 	},
 	ColorPickerStyles = {
@@ -129,22 +150,99 @@ function Library:set_defaults(defaults, options)
 	return defaults
 end
 
+function Library.is_gradient_slot(v)
+	return type(v) == "table" and typeof(v.Sequence) == "ColorSequence"
+end
+
+function Library:gradient_slot_mid_color(slotVal)
+	if Library.is_gradient_slot(slotVal) then
+		local kps = slotVal.Sequence.Keypoints
+		local n = #kps
+		if n > 0 then
+			return kps[math.max(1, math.ceil(n * 0.5))].Value
+		end
+		return Color3.new(1, 1, 1)
+	end
+	return slotVal
+end
+
+function Library:darken(color, f)
+	if Library.is_gradient_slot(color) then
+		color = Library:gradient_slot_mid_color(color)
+	end
+	local h, s, v = Color3.toHSV(color)
+	f = 1 - ((f or 15) / 80)
+	return Color3.fromHSV(h, math.clamp(s/f, 0, 1), math.clamp(v*f, 0, 1))
+end
+
+function Library:lighten(color, f)
+	if Library.is_gradient_slot(color) then
+		color = Library:gradient_slot_mid_color(color)
+	end
+	local h, s, v = Color3.toHSV(color)
+	f = 1 - ((f or 15) / 80)
+	return Color3.fromHSV(h, math.clamp(s*f, 0, 1), math.clamp(v/f, 0, 1))
+end
+
+function Library:adjust_colorsequence(seq, colorAlter)
+	if colorAlter == 0 then
+		return seq
+	end
+	local newKps = {}
+	for _, kp in ipairs(seq.Keypoints) do
+		local c = kp.Value
+		if colorAlter < 0 then
+			c = Library:darken(c, -colorAlter)
+		elseif colorAlter > 0 then
+			c = Library:lighten(c, colorAlter)
+		end
+		table.insert(newKps, ColorSequenceKeypoint.new(kp.Time, c))
+	end
+	return ColorSequence.new(table.unpack(newKps))
+end
+
+function Library:resolve_slot_color(slotVal, colorAlter)
+	colorAlter = colorAlter or 0
+	local base = self:gradient_slot_mid_color(slotVal)
+	if colorAlter < 0 then
+		return Library:darken(base, -colorAlter)
+	elseif colorAlter > 0 then
+		return Library:lighten(base, colorAlter)
+	end
+	return base
+end
+
 function Library:change_theme(toTheme)
 	Library.CurrentTheme = toTheme
 	local c = self:lighten(toTheme.Tertiary, 20)
 	Library.DisplayName.Text = "Welcome, <font color='rgb(" ..  math.floor(c.R*255) .. "," .. math.floor(c.G*255) .. "," .. math.floor(c.B*255) .. ")'> <b>" .. LocalPlayer.DisplayName .. "</b> </font>"
-	for color, objects in next, Library.ThemeObjects do
-		local themeColor = Library.CurrentTheme[color]
+	for _, objects in next, Library.ThemeObjects do
 		for _, obj in next, objects do
-			local element, property, theme, colorAlter = obj[1], obj[2], obj[3], obj[4] or 0
-			local themeColor = Library.CurrentTheme[theme]
-			local modifiedColor = themeColor
-			if colorAlter < 0 then
-				modifiedColor = Library:darken(themeColor, -1 * colorAlter)
-			elseif colorAlter > 0 then
-				modifiedColor = Library:lighten(themeColor, colorAlter)
+			local element, property, regSlot, colorAlter = obj[1], obj[2], obj[3], obj[4] or 0
+			local slotVal = Library.CurrentTheme[regSlot]
+			if property == "BackgroundColor3" then
+				local inst = element.AbsoluteObject
+				local ug = inst:FindFirstChild("MercuryThemeGradient")
+				if Library.is_gradient_slot(slotVal) then
+					inst.BackgroundColor3 = Color3.new(1, 1, 1)
+					if not ug then
+						ug = Instance.new("UIGradient")
+						ug.Name = "MercuryThemeGradient"
+						ug.Parent = inst
+					end
+					ug.Rotation = slotVal.Rotation or 0
+					ug.ColorSequence = Library:adjust_colorsequence(slotVal.Sequence, colorAlter)
+				else
+					if ug then
+						ug:Destroy()
+					end
+					local modifiedColor = Library:resolve_slot_color(slotVal, colorAlter)
+					element:tween({BackgroundColor3 = modifiedColor})
+				end
+			else
+				local modifiedColor = Library:resolve_slot_color(slotVal, colorAlter)
+				element:tween({[property] = modifiedColor})
 			end
-			element:tween{[property] = modifiedColor}
 		end
 	end
 end
@@ -261,18 +359,12 @@ function Library:object(class, properties)
 
 		if type(color) == "table" then
 			local theme, colorAlter = color[1], color[2] or 0
-			local themeColor = Library.CurrentTheme[theme]
-			local modifiedColor = themeColor
-			if colorAlter < 0 then
-				modifiedColor = Library:darken(themeColor, -1 * colorAlter)
-			elseif colorAlter > 0 then
-				modifiedColor = Library:lighten(themeColor, colorAlter)
-			end
+			local modifiedColor = Library:resolve_slot_color(Library.CurrentTheme[theme], colorAlter)
 			stroke.Color = modifiedColor
 			table.insert(Library.ThemeObjects[theme], {stroke, "Color", theme, colorAlter})
 		elseif type(color) == "string" then
-			local themeColor = Library.CurrentTheme[color]
-			stroke.Color = themeColor
+			local modifiedColor = Library:resolve_slot_color(Library.CurrentTheme[color], 0)
+			stroke.Color = modifiedColor
 			table.insert(Library.ThemeObjects[color], {stroke, "Color", color, 0})
 		else
 			stroke.Color = color
@@ -338,21 +430,25 @@ function Library:object(class, properties)
 		end,
 		Theme = function(value)
 			for property, obj in next, value do
+				local themeKey, colorAlter
 				if type(obj) == "table" then
-					local theme, colorAlter = obj[1], obj[2] or 0
-					local themeColor = Library.CurrentTheme[theme]
-					local modifiedColor = themeColor
-					if colorAlter < 0 then
-						modifiedColor = Library:darken(themeColor, -1 * colorAlter)
-					elseif colorAlter > 0 then
-						modifiedColor = Library:lighten(themeColor, colorAlter)
-					end
-					localObject[property] = modifiedColor
-					table.insert(self.ThemeObjects[theme], {methods, property, theme, colorAlter})
+					themeKey, colorAlter = obj[1], obj[2] or 0
 				else
-					local themeColor = Library.CurrentTheme[obj]
-					localObject[property] = themeColor
-					table.insert(self.ThemeObjects[obj], {methods, property, obj, 0})
+					themeKey, colorAlter = obj, 0
+				end
+				local slotVal = Library.CurrentTheme[themeKey]
+				if property == "BackgroundColor3" and Library.is_gradient_slot(slotVal) then
+					localObject.BackgroundColor3 = Color3.new(1, 1, 1)
+					local ug = Instance.new("UIGradient")
+					ug.Name = "MercuryThemeGradient"
+					ug.Parent = localObject
+					ug.Rotation = slotVal.Rotation or 0
+					ug.ColorSequence = Library:adjust_colorsequence(slotVal.Sequence, colorAlter)
+					table.insert(self.ThemeObjects[themeKey], {methods, property, themeKey, colorAlter})
+				else
+					local modifiedColor = Library:resolve_slot_color(slotVal, colorAlter)
+					localObject[property] = modifiedColor
+					table.insert(self.ThemeObjects[themeKey], {methods, property, themeKey, colorAlter})
 				end
 			end
 		end,
@@ -391,18 +487,6 @@ function Library:show(state)
 		wait(0.1)
 		self.mainFrame:tween{Size = UDim2.new(), Length = 0.25}
 	end
-end
-
-function Library:darken(color, f)
-	local h, s, v = Color3.toHSV(color)
-	f = 1 - ((f or 15) / 80)
-	return Color3.fromHSV(h, math.clamp(s/f, 0, 1), math.clamp(v*f, 0, 1))
-end
-
-function Library:lighten(color, f)
-	local h, s, v = Color3.toHSV(color)
-	f = 1 - ((f or 15) / 80)
-	return Color3.fromHSV(h, math.clamp(s*f, 0, 1), math.clamp(v/f, 0, 1))
 end
 
 --[[ old lighten/darken functions, may revert if contrast gets fucked up
@@ -1036,6 +1120,8 @@ function Library:create(options)
 
 	do
 		local sec = changelogTab:section{Name = "2026-04-12"}
+		sec:label{Text = "Gradient theme fix", Description = "Theme swatches no longer assign gradient tables to BackgroundColor3 (that caused white blowout). ColorSequence is built from keypoints; adjust_colorsequence uses table.unpack."}
+		sec:label{Text = "Themes: Gradient preset", Description = "Main/Secondary can use UIGradient via { Sequence, Rotation }; see Library.Themes.Gradient."}
 		sec:label{Text = "Tab bar: drag to reorder", Description = "Reorder uses Heartbeat + LayoutOrder; scrolling pauses while dragging. Icon/title no longer steal clicks from the tab button."}
 		sec:label{Text = "Window drag vs tab strip", Description = "Clicks on the tab strip no longer start moving the whole window."}
 		sec:label{Text = "Hello, world", Description = "Placeholder release notes for the UI shell."}
@@ -1360,7 +1446,7 @@ function Library:tab(options)
 				tabButton.LayoutOrder = maxO + 1
 				tabButton.Size = UDim2.new(0, 50, tabButton.Size.Y.Scale, tabButton.Size.Y.Offset)
 				tabButton.Visible = true
-				tabButton:fade(false, Library.CurrentTheme.Main, 0.1)			
+				tabButton:fade(false, Library:resolve_slot_color(Library.CurrentTheme.Main, 0), 0.1)			
 				tabButton:tween({Size = UDim2.new(0, 125, tabButton.Size.Y.Scale, tabButton.Size.Y.Offset), Length = 0.1})
 				for _, tabInfo in next, self.Tabs do
 					local page = tabInfo[1]
@@ -1421,7 +1507,7 @@ function Library:tab(options)
 	})
 
 	tabButtonClose.MouseButton1Click:connect(function()
-		tabButton:fade(true, Library.CurrentTheme.Main, 0.1)
+		tabButton:fade(true, Library:resolve_slot_color(Library.CurrentTheme.Main, 0), 0.1)
 		tabButton:tween({Size = UDim2.new(0, 50, tabButton.Size.Y.Scale, tabButton.Size.Y.Offset), Length = 0.1}, function()
 			tabButton.Visible = false
 			tab.Visible = false
@@ -3118,6 +3204,24 @@ function Library:_theme_selector()
 		PaddingTop = UDim.new(0, 5)
 	})
 
+	local function applyThemeSlotPreview(frame, slotVal)
+		local inst = frame.AbsoluteObject
+		local old = inst:FindFirstChild("MercuryThemeGradient")
+		if old then
+			old:Destroy()
+		end
+		if Library.is_gradient_slot(slotVal) then
+			frame.BackgroundColor3 = Color3.new(1, 1, 1)
+			local ug = Instance.new("UIGradient")
+			ug.Name = "MercuryThemeGradient"
+			ug.ColorSequence = slotVal.Sequence
+			ug.Rotation = slotVal.Rotation or 0
+			ug.Parent = inst
+		else
+			frame.BackgroundColor3 = slotVal
+		end
+	end
+
 	for themeName, themeColors in next, Library.Themes do
 		local count = 0
 
@@ -3150,14 +3254,14 @@ function Library:_theme_selector()
 			local colorMain = themeColorsContainer:object("Frame", {
 				Centered = true,
 				Size = UDim2.fromScale(1, 1),
-				BackgroundColor3 = themeColors.Main
 			}):round(4)
+			applyThemeSlotPreview(colorMain, themeColors.Main)
 
 			local colorSecondary = colorMain:object("Frame", {
 				Centered = true,
 				Size = UDim2.new(1, -16, 1, -16),
-				BackgroundColor3 = themeColors.Secondary
 			}):round(4)
+			applyThemeSlotPreview(colorSecondary, themeColors.Secondary)
 
 			colorSecondary:object("UIListLayout", {
 				Padding = UDim.new(0, 5)
