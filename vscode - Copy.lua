@@ -95,7 +95,7 @@ local Library = {
 			StrongText = Color3.fromRGB(246, 250, 255),
 			WeakText = Color3.fromRGB(148, 162, 192),
 			SlotTransparency = {
-				Main = 0.01,    -- almost solid top shell
+				Main = 0,    -- solid outer shell to avoid washed-out edges
 				Secondary = 0.05, -- subtle panel translucency
 			},
 		},
@@ -158,7 +158,7 @@ function Library:change_theme(toTheme)
 			elseif colorAlter > 0 then
 				modifiedColor = Library:lighten(themeColor, colorAlter)
 			end
-			element:tween{[property] = modifiedColor}
+			element:tween{[property] = modifiedColor, Length = 0.35}
 		end
 	end
 	local st = toTheme.SlotTransparency
@@ -186,16 +186,35 @@ function Library:change_theme(toTheme)
 					ColorSequenceKeypoint.new(1,  Color3.fromRGB(200, 220, 255))
 				}
 				grad.Transparency = NumberSequence.new{
-					NumberSequenceKeypoint.new(0, 0.82),
-					NumberSequenceKeypoint.new(1, 0.92)
+					NumberSequenceKeypoint.new(0, 1),
+					NumberSequenceKeypoint.new(1, 1)
 				}
 				grad.Rotation = 135
 				grad.Parent = absFrame
+				grad:TweenTransparency(NumberSequence.new{
+					NumberSequenceKeypoint.new(0, 0.22),
+					NumberSequenceKeypoint.new(1, 0.38)
+				}, Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.4, true)
+			else
+				existingGlass:TweenTransparency(NumberSequence.new{
+					NumberSequenceKeypoint.new(0, 0.22),
+					NumberSequenceKeypoint.new(1, 0.38)
+				}, Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.4, true)
 			end
 			if existingStroke then existingStroke:Destroy() end
 		else
 			-- Non-transparent theme: remove glass elements
-			if existingGlass then existingGlass:Destroy() end
+			if existingGlass then
+				existingGlass:TweenTransparency(NumberSequence.new{
+					NumberSequenceKeypoint.new(0, 1),
+					NumberSequenceKeypoint.new(1, 1)
+				}, Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.25, true)
+				task.delay(0.26, function()
+					if existingGlass and existingGlass.Parent then
+						existingGlass:Destroy()
+					end
+				end)
+			end
 			if existingStroke then existingStroke:Destroy() end
 		end
 	end
@@ -687,8 +706,8 @@ function Library:create(options)
 				ColorSequenceKeypoint.new(1,  Color3.fromRGB(200, 220, 255))
 			}
 			grad.Transparency = NumberSequence.new{
-				NumberSequenceKeypoint.new(0, 0.82),
-				NumberSequenceKeypoint.new(1, 0.92)
+				NumberSequenceKeypoint.new(0, 0.22),
+				NumberSequenceKeypoint.new(1, 0.38)
 			}
 			grad.Rotation = 135
 			grad.Parent = core.AbsoluteObject
@@ -760,48 +779,6 @@ function Library:create(options)
 			end)
 		end
 	end
- 
-	rawset(core, "oldSize", options.Size)
- 
-	self.mainFrame = core
- 
-	local tabButtons = core:object("ScrollingFrame", {
-		Size = UDim2.new(1, -40, 0, 25),
-		Position = UDim2.fromOffset(5, 5),
-		BackgroundTransparency = 1,
-		ClipsDescendants = true,
-		ScrollBarThickness = 0,
-		ScrollingDirection = Enum.ScrollingDirection.X,
-		AutomaticCanvasSize = Enum.AutomaticSize.X
-	})
- 
-	tabButtons:object("UIListLayout", {
-		FillDirection = Enum.FillDirection.Horizontal,
-		HorizontalAlignment = Enum.HorizontalAlignment.Left,
-		SortOrder = Enum.SortOrder.LayoutOrder,
-		Padding = UDim.new(0, 4)
-	})
- 
-	rawset(core, "oldSize", options.Size)
- 
-	self.mainFrame = core
- 
-	local tabButtons = core:object("ScrollingFrame", {
-		Size = UDim2.new(1, -40, 0, 25),
-		Position = UDim2.fromOffset(5, 5),
-		BackgroundTransparency = 1,
-		ClipsDescendants = true,
-		ScrollBarThickness = 0,
-		ScrollingDirection = Enum.ScrollingDirection.X,
-		AutomaticCanvasSize = Enum.AutomaticSize.X
-	})
- 
-	tabButtons:object("UIListLayout", {
-		FillDirection = Enum.FillDirection.Horizontal,
-		HorizontalAlignment = Enum.HorizontalAlignment.Left,
-		SortOrder = Enum.SortOrder.LayoutOrder,
-		Padding = UDim.new(0, 4)
-	})
  
 	local closeButton = core:object("ImageButton", {
 		BackgroundTransparency = 1,
@@ -1172,9 +1149,10 @@ function Library:create(options)
  
 	do
 		local sec = changelogTab:section{Name = "2026-04-14"}
-		sec:label{Text = "BUILD MARKER: FROST-CHECK-0414-A", Description = "If you can see this line, you are running the latest edited file."}
+		sec:label{Text = "BUILD MARKER: FROST-CHECK-0414-A", Description = "new stuff ifxed lmaooo."}
 		sec:label{Text = "Frost pass: transparency + stroke cleanup", Description = "Removed forced Frost border stroke paths and reduced transparency intensity."}
 		sec:label{Text = "BUILD MARKER: FROST-CHECK-0414-B", Description = "Top chrome is less transparent and theme-switch transparency now tweens smoothly."}
+		sec:label{Text = "BUILD MARKER: FROST-CHECK-0414-C", Description = "Removed duplicate top-strip construction and made Frost theme transitions use longer tweens."}
 	end
 
 	do
