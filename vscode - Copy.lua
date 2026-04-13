@@ -95,8 +95,8 @@ local Library = {
 			StrongText = Color3.fromRGB(246, 250, 255),
 			WeakText = Color3.fromRGB(148, 162, 192),
 			SlotTransparency = {
-				Main = 0.22,    -- main window: semi-transparent glass
-				Secondary = 0.35, -- inner panels: more transparent
+				Main = 0.35,    -- main window: semi-transparent glass
+				Secondary = 0.55, -- inner panels: more transparent
 			},
 		},
 		VisualStudio = {}
@@ -177,25 +177,33 @@ function Library:change_theme(toTheme)
 end
 
 function Library:_refreshGlassStyles(theme)
+	local st = theme.SlotTransparency
 	for _, glassEntry in ipairs(self.GlassObjects) do
 		local slotName = glassEntry.slotName
-		local baseColor = theme[slotName] or theme.Secondary
-		glassEntry.gradient.Color = ColorSequence.new({
-			ColorSequenceKeypoint.new(0, self:lighten(baseColor, 12)),
-			ColorSequenceKeypoint.new(1, self:darken(baseColor, 8))
-		})
-		glassEntry.stroke.Color = self:lighten(theme.Tertiary, 12)
-		glassEntry.stroke.Transparency = (slotName == "Main") and 0.22 or 0.32
+		local shouldEnable = st and st[slotName] ~= nil
+		glassEntry.gradient.Enabled = shouldEnable
+		glassEntry.stroke.Enabled = shouldEnable
+		if shouldEnable then
+			local baseColor = theme[slotName] or theme.Secondary
+			glassEntry.gradient.Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0, self:lighten(baseColor, 12)),
+				ColorSequenceKeypoint.new(1, self:darken(baseColor, 8))
+			})
+			glassEntry.stroke.Color = self:lighten(theme.Tertiary, 12)
+			glassEntry.stroke.Transparency = (slotName == "Main") and 0.22 or 0.32
+		end
 	end
 end
 
 function Library:_applyGlassStyle(guiWrapper, slotName)
 	local gradient = guiWrapper:object("UIGradient", {
-		Rotation = 118
+		Rotation = 118,
+		Enabled = false
 	})
 	local stroke = guiWrapper:object("UIStroke", {
 		Thickness = 1,
-		ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+		ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+		Enabled = false
 	})
 	table.insert(self.GlassObjects, {
 		gradient = gradient.AbsoluteObject,
