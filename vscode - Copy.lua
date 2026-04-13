@@ -28,6 +28,32 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local Mouse = LocalPlayer:GetMouse()
 local HTTPService = game:GetService("HttpService")
+
+local DEBUG_LOG_PATH = "debug-51831a.log"
+local DEBUG_RUN_ID = "pre-fix-1"
+local function debugLog(hypothesisId, location, message, data)
+	local payload = {
+		sessionId = "51831a",
+		runId = DEBUG_RUN_ID,
+		hypothesisId = hypothesisId,
+		location = location,
+		message = message,
+		data = data or {},
+		timestamp = DateTime.now().UnixTimestampMillis
+	}
+	local encoded = HTTPService:JSONEncode(payload) .. "\n"
+	pcall(function()
+		if appendfile then
+			appendfile(DEBUG_LOG_PATH, encoded)
+		elseif writefile then
+			local existing = ""
+			if isfile and isfile(DEBUG_LOG_PATH) then
+				existing = readfile(DEBUG_LOG_PATH)
+			end
+			writefile(DEBUG_LOG_PATH, existing .. encoded)
+		end
+	end)
+end
  
 local Library = {
 	Themes = {
@@ -426,6 +452,16 @@ function Library:object(class, properties)
 					if slotTrans and slotTrans[themeKey] ~= nil then
 						localObject.BackgroundTransparency = slotTrans[themeKey]
 						table.insert(Library.ThemeTransparencyObjects, {methods, themeKey})
+						-- #region agent log
+						if localObject:IsA("GuiButton") then
+							debugLog("H1", "vscode - Copy.lua:452", "SlotTransparency auto-applied to GuiButton", {
+								className = localObject.ClassName,
+								themeKey = themeKey,
+								appliedTransparency = slotTrans[themeKey],
+								objectName = localObject.Name
+							})
+						end
+						-- #endregion
 					end
 				end
 			end
@@ -626,6 +662,15 @@ function Library:create(options)
 	end
  
 	self.CurrentTheme = options.Theme
+	-- #region agent log
+	debugLog("H2", "vscode - Copy.lua:654", "Create called with initial theme", {
+		themeMain = tostring(self.CurrentTheme.Main),
+		themeSecondary = tostring(self.CurrentTheme.Secondary),
+		hasSlotTransparency = self.CurrentTheme.SlotTransparency ~= nil,
+		slotMain = self.CurrentTheme.SlotTransparency and self.CurrentTheme.SlotTransparency.Main or nil,
+		slotSecondary = self.CurrentTheme.SlotTransparency and self.CurrentTheme.SlotTransparency.Secondary or nil
+	})
+	-- #endregion
  
 	local gui = self:object("ScreenGui", {
 		Parent = (RunService:IsStudio() and LocalPlayer.PlayerGui) or game:GetService("CoreGui"),
@@ -669,6 +714,11 @@ function Library:create(options)
 		local st = Library.CurrentTheme.SlotTransparency
 		if st and st.Main ~= nil then
 			core.AbsoluteObject.BackgroundTransparency = st.Main
+			-- #region agent log
+			debugLog("H3", "vscode - Copy.lua:700", "Initial main frame transparency applied", {
+				backgroundTransparency = core.AbsoluteObject.BackgroundTransparency
+			})
+			-- #endregion
 			-- Glassmorphism overlay for Frost default
 			local grad = Instance.new("UIGradient")
 			grad.Name = "_GlassGradient"
@@ -965,6 +1015,12 @@ function Library:create(options)
 	do
 		local down = false
 		local hovered = false
+		-- #region agent log
+		debugLog("H4", "vscode - Copy.lua:998", "Home button initial transparency", {
+			selectedIsHome = selectedTab == homeButton,
+			backgroundTransparency = homeButton.BackgroundTransparency
+		})
+		-- #endregion
  
 		homeButton.MouseEnter:connect(function()
 			hovered = true
@@ -1419,6 +1475,13 @@ function Library:tab(options)
 	do
 		local down = false
 		local hovered = false
+		-- #region agent log
+		debugLog("H4", "vscode - Copy.lua:1454", "Tab button initial transparency", {
+			selectedIsThisTab = selectedTab == tabButton,
+			backgroundTransparency = tabButton.BackgroundTransparency,
+			tabName = options.Name
+		})
+		-- #endregion
  
 		tabButton.MouseEnter:connect(function()
 			hovered = true
