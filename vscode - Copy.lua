@@ -87,18 +87,6 @@ local Library = {
 			StrongText = Color3.fromHSV(0, 0, 1),		
 			WeakText = Color3.fromHSV(0, 0, 172/255)
 		},
-		-- Optional SlotTransparency: per-slot BackgroundTransparency (0–1) for a glass / frosted look
-		Frost = {
-			Main = Color3.fromRGB(18, 24, 36),
-			Secondary = Color3.fromRGB(42, 52, 72),
-			Tertiary = Color3.fromRGB(118, 214, 255),
-			StrongText = Color3.fromRGB(246, 250, 255),
-			WeakText = Color3.fromRGB(148, 162, 192),
-			SlotTransparency = {
-				Main = 0.35,    -- main window: semi-transparent glass
-				Secondary = 0.55, -- inner panels: more transparent
-			},
-		},
 		VisualStudio = {}
 	},
 	ColorPickerStyles = {
@@ -114,8 +102,6 @@ local Library = {
 		StrongText = {},
 		WeakText = {}
 	},
-	-- { guiWrapper, slotName } — BackgroundColor3 elements that follow SlotTransparency on the active theme
-	ThemeTransparencyObjects = {},
 	WelcomeText = nil,
 	DisplayName = nil,
 	DragSpeed = 0.06,
@@ -160,17 +146,6 @@ function Library:change_theme(toTheme)
 			end
 			element:tween{[property] = modifiedColor}
 		end
-	end
-	local st = toTheme.SlotTransparency
-	for _, entry in ipairs(Library.ThemeTransparencyObjects) do
-		local element, themeKey = entry[1], entry[2]
-		local trans = (st and st[themeKey] ~= nil) and st[themeKey] or 0
-		element:tween({BackgroundTransparency = trans})
-	end
-	-- Also update the main window and content panel (created before ThemeTransparencyObjects are registered)
-	if Library.mainFrame then
-		local mainTrans = (st and st.Main ~= nil) and st.Main or 0
-		Library.mainFrame:tween({BackgroundTransparency = mainTrans})
 	end
 end
 
@@ -363,27 +338,21 @@ function Library:object(class, properties)
 		end,
 		Theme = function(value)
 			for property, obj in next, value do
-				local themeKey, colorAlter
 				if type(obj) == "table" then
-					themeKey, colorAlter = obj[1], obj[2] or 0
-				else
-					themeKey, colorAlter = obj, 0
-				end
-				local themeColor = Library.CurrentTheme[themeKey]
-				local modifiedColor = themeColor
-				if colorAlter < 0 then
-					modifiedColor = Library:darken(themeColor, -1 * colorAlter)
-				elseif colorAlter > 0 then
-					modifiedColor = Library:lighten(themeColor, colorAlter)
-				end
-				localObject[property] = modifiedColor
-				table.insert(self.ThemeObjects[themeKey], {methods, property, themeKey, colorAlter})
-				if property == "BackgroundColor3" then
-					local slotTrans = Library.CurrentTheme.SlotTransparency
-					if slotTrans and slotTrans[themeKey] ~= nil then
-						localObject.BackgroundTransparency = slotTrans[themeKey]
-						table.insert(Library.ThemeTransparencyObjects, {methods, themeKey})
+					local theme, colorAlter = obj[1], obj[2] or 0
+					local themeColor = Library.CurrentTheme[theme]
+					local modifiedColor = themeColor
+					if colorAlter < 0 then
+						modifiedColor = Library:darken(themeColor, -1 * colorAlter)
+					elseif colorAlter > 0 then
+						modifiedColor = Library:lighten(themeColor, colorAlter)
 					end
+					localObject[property] = modifiedColor
+					table.insert(self.ThemeObjects[theme], {methods, property, theme, colorAlter})
+				else
+					local themeColor = Library.CurrentTheme[obj]
+					localObject[property] = themeColor
+					table.insert(self.ThemeObjects[obj], {methods, property, obj, 0})
 				end
 			end
 		end,
@@ -458,91 +427,7 @@ function Library:set_status(txt)
 	self.statusText.Text = txt
 end
 
-function Library:_reorderTabStrip(navInst, draggedInst, mouseX)
-	local tabs = {}
-	for _, c in ipairs(navInst:GetChildren()) do
-		if c:IsA("GuiButton") and c.Visible then
-			tabs[#tabs + 1] = c
-		end
-	end
-	table.sort(tabs, function(a, b)
-		return a.LayoutOrder < b.LayoutOrder
-	end)
-
-	local others = {}
-	for _, b in ipairs(tabs) do
-		if b ~= draggedInst then
-			others[#others + 1] = b
-		end
-	end
-
-	local target = #others + 1
-	for i, b in ipairs(others) do
-		local midX = b.AbsolutePosition.X + b.AbsoluteSize.X * 0.5
-		if mouseX < midX then
-			target = i
-			break
-		end
-	end
-
-	table.insert(others, target, draggedInst)
-	for i, b in ipairs(others) do
-		b.LayoutOrder = i
-	end
-end
-
-function Library:_hookTabStripReorder(window, tabButtonWrapper)
-	local navInst = window.navigation.AbsoluteObject
-	local btnInst = tabButtonWrapper.AbsoluteObject
-
-	btnInst.MouseButton1Down:Connect(function()
-		local startPos = UserInputService:GetMouseLocation()
-		local dragging = false
-		local hbConn, endedConn
-		local scrollWasEnabled = navInst.ScrollingEnabled
-
-		local function finish()
-			if hbConn then
-				hbConn:Disconnect()
-				hbConn = nil
-			end
-			if endedConn then
-				endedConn:Disconnect()
-				endedConn = nil
-			end
-			navInst.ScrollingEnabled = scrollWasEnabled
-			btnInst.ZIndex = 1
-		end
-
-		-- Heartbeat polling: InputChanged(MouseMovement) is often missing or sparse over CoreGui / some clients.
-		hbConn = RunService.Heartbeat:Connect(function()
-			if not UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
-				return
-			end
-			local pos = UserInputService:GetMouseLocation()
-			if not dragging then
-				if (Vector2.new(pos.X, pos.Y) - Vector2.new(startPos.X, startPos.Y)).Magnitude > 6 then
-					dragging = true
-					btnInst.ZIndex = 50
-					navInst.ScrollingEnabled = false
-				end
-			end
-			if dragging then
-				self:_reorderTabStrip(navInst, btnInst, pos.X)
-			end
-		end)
-
-		endedConn = UserInputService.InputEnded:Connect(function(input)
-			if input.UserInputType == Enum.UserInputType.MouseButton1 then
-				finish()
-			end
-		end)
-	end)
-end
-
 function Library:create(options)
-
-	Library.ThemeTransparencyObjects = {}
 
 	local settings = {
 		Theme = "Dark"
@@ -614,33 +499,7 @@ function Library:create(options)
 	core:fade(false, nil, 0.4)
 	core:tween({Size = options.Size, Length = 0.3}, function()
 		core.ClipsDescendants = false
-		-- Apply Frost glass transparency to the main window if the theme has it
-		local st = Library.CurrentTheme.SlotTransparency
-		if st and st.Main ~= nil then
-			core.AbsoluteObject.BackgroundTransparency = st.Main
-		end
 	end)
-
-	rawset(core, "oldSize", options.Size)
-
-	self.mainFrame = core
-
-	local tabButtons = core:object("ScrollingFrame", {
-		Size = UDim2.new(1, -40, 0, 25),
-		Position = UDim2.fromOffset(5, 5),
-		BackgroundTransparency = 1,
-		ClipsDescendants = true,
-		ScrollBarThickness = 0,
-		ScrollingDirection = Enum.ScrollingDirection.X,
-		AutomaticCanvasSize = Enum.AutomaticSize.X
-	})
-
-	tabButtons:object("UIListLayout", {
-		FillDirection = Enum.FillDirection.Horizontal,
-		HorizontalAlignment = Enum.HorizontalAlignment.Left,
-		SortOrder = Enum.SortOrder.LayoutOrder,
-		Padding = UDim.new(0, 4)
-	})
 
 	do
 		local S, Event = pcall(function()
@@ -648,17 +507,11 @@ function Library:create(options)
 		end)
 
 		if S then
-			core.Active = true
+			core.Active = true;
 
 			Event:connect(function()
 				local Input = core.InputBegan:connect(function(Key)
 					if Key.UserInputType == Enum.UserInputType.MouseButton1 then
-						local m = UserInputService:GetMouseLocation()
-						local ap = tabButtons.AbsolutePosition
-						local as = tabButtons.AbsoluteSize
-						if m.X >= ap.X and m.X <= ap.X + as.X and m.Y >= ap.Y and m.Y <= ap.Y + as.Y then
-							return
-						end
 						local ObjectPosition = Vector2.new(Mouse.X - core.AbsolutePosition.X, Mouse.Y - core.AbsolutePosition.Y)
 						while RunService.RenderStepped:wait() and UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
 
@@ -671,9 +524,24 @@ function Library:create(options)
 							else
 								core:tween{
 									Position = UDim2.fromOffset(Mouse.X - ObjectPosition.X + (core.Size.X.Offset * core.AnchorPoint.X), Mouse.Y - ObjectPosition.Y + (core.Size.Y.Offset * core.AnchorPoint.Y)),
-									Length = Library.DragSpeed
+									Length = Library.DragSpeed	
 								}
-							end
+							end	
+							--[[core.AbsoluteObject:TweenPosition(
+								UDim2.new(0, Mouse.X - ObjectPosition.X + (core.Size.X.Offset * core.AnchorPoint.X), 0, Mouse.Y - ObjectPosition.Y + (core.Size.Y.Offset * core.AnchorPoint.Y)),           
+								Enum.EasingDirection.In,
+								Enum.EasingStyle.Sine,
+								Library.DragSpeed,
+								true
+								
+								--
+								core:tween{
+								Position = UDim2.new(0, Mouse.X - ObjectPosition.X + (core.Size.X.Offset * core.AnchorPoint.X), 0, Mouse.Y - ObjectPosition.Y + (core.Size.Y.Offset * core.AnchorPoint.Y)),
+								Direction = Enum.EasingDirection.Out,
+								Style = Enum.EasingStyle.Quad,
+								Length = Library.DragSpeed
+							}
+							)]]
 						end
 					end
 				end)
@@ -686,27 +554,6 @@ function Library:create(options)
 			end)
 		end
 	end
-
-	rawset(core, "oldSize", options.Size)
-
-	self.mainFrame = core
-
-	local tabButtons = core:object("ScrollingFrame", {
-		Size = UDim2.new(1, -40, 0, 25),
-		Position = UDim2.fromOffset(5, 5),
-		BackgroundTransparency = 1,
-		ClipsDescendants = true,
-		ScrollBarThickness = 0,
-		ScrollingDirection = Enum.ScrollingDirection.X,
-		AutomaticCanvasSize = Enum.AutomaticSize.X
-	})
-
-	tabButtons:object("UIListLayout", {
-		FillDirection = Enum.FillDirection.Horizontal,
-		HorizontalAlignment = Enum.HorizontalAlignment.Left,
-		SortOrder = Enum.SortOrder.LayoutOrder,
-		Padding = UDim.new(0, 4)
-	})
 
 	rawset(core, "oldSize", options.Size)
 
@@ -819,14 +666,6 @@ function Library:create(options)
 		Size = UDim2.new(1, -10, 1, -86)
 	}):round(7) -- Sept
 
-	-- Apply Frost glass transparency to the content panel if the theme has it
-	do
-		local st = Library.CurrentTheme.SlotTransparency
-		if st and st.Secondary ~= nil then
-			content.AbsoluteObject.BackgroundTransparency = st.Secondary
-		end
-	end
-
 	local status = core:object("TextLabel", {
 		AnchorPoint = Vector2.new(0, 1),
 		BackgroundTransparency = 1,
@@ -843,8 +682,7 @@ function Library:create(options)
 		Name = "hehehe siuuuuuuuuu",
 		BackgroundTransparency = 0,
 		Theme = {BackgroundColor3 = "Secondary"},
-		Size = UDim2.new(0, 125, 0, 25),
-		LayoutOrder = 1
+		Size = UDim2.new(0, 125, 0, 25)
 	}):round(5)
 
 	local homeButtonText = homeButton:object("TextLabel", {
@@ -868,19 +706,6 @@ function Library:create(options)
 		Image = "http://www.roblox.com/asset/?id=8569322835",
 		Theme = {ImageColor3 = "StrongText"}
 	})
-
-	pcall(function()
-		homeButtonText.Active = false
-	end)
-	pcall(function()
-		homeButtonIcon.Active = false
-	end)
-	pcall(function()
-		homeButtonText.Interactable = false
-	end)
-	pcall(function()
-		homeButtonIcon.Interactable = false
-	end)
 
 	local homePage = content:object("Frame", {
 		Size = UDim2.fromScale(1, 1),
@@ -1011,15 +836,6 @@ function Library:create(options)
 		end)
 	end
 
-	local changelogTabIcon = profile:object("ImageButton", {
-		BackgroundTransparency = 1,
-		Theme = {ImageColor3 = "WeakText"},
-		Size = UDim2.fromOffset(24, 24),
-		Position = UDim2.new(1, -78, 1, -10),
-		AnchorPoint = Vector2.new(1, 1),
-		Image = "rbxassetid://8579244616"
-	}):tooltip("changelog")
-
 	local settingsTabIcon = profile:object("ImageButton", {
 		BackgroundTransparency = 1,
 		Theme = {ImageColor3 = "WeakText"},
@@ -1071,33 +887,6 @@ function Library:create(options)
 		homePage = homePage,
 		nilFolder = core:object("Folder"),
 	}, Library)
-
-	Library:_hookTabStripReorder(mt, homeButton)
-
-	local changelogTab = Library.tab(mt, {
-		Name = "Changelog",
-		Internal = changelogTabIcon,
-		Icon = "rbxassetid://8579244616"
-	})
-
-	do
-		local sec = changelogTab:section{Name = "2026-04-12"}
-		sec:label{Text = "Theme: Frost (glass)", Description = "Optional SlotTransparency on a theme tints Main/Secondary panels; see Library.Themes.Frost. No ColorSequence."}
-		sec:label{Text = "Tab bar: drag to reorder", Description = "Reorder uses Heartbeat + LayoutOrder; scrolling pauses while dragging. Icon/title no longer steal clicks from the tab button."}
-		sec:label{Text = "Window drag vs tab strip", Description = "Clicks on the tab strip no longer start moving the whole window."}
-		sec:label{Text = "Hello, world", Description = "Placeholder release notes for the UI shell."}
-		sec:label{Text = "Another line", Description = "Nothing to see here yet."}
-	end
-
-	do
-		local sec = changelogTab:section{Name = "2026-03-01"}
-		sec:label{Text = "Hello, world (again)", Description = "Fake date, fake entry — swap with real notes later."}
-	end
-
-	do
-		local sec = changelogTab:section{Name = "2026-01-15"}
-		sec:label{Text = "Initial hello", Description = "hello world x3"}
-	end
 
 	local settingsTab = Library.tab(mt, {
 		Name = "Settings",
@@ -1398,13 +1187,6 @@ function Library:tab(options)
 		quickAccessButton.MouseButton1Click:connect(function()
 			if not tabButton.Visible then
 				tabButton.Parent = self.navigation.AbsoluteObject
-				local maxO = 0
-				for _, c in ipairs(self.navigation.AbsoluteObject:GetChildren()) do
-					if c:IsA("GuiButton") and c.Visible and c ~= tabButton.AbsoluteObject then
-						maxO = math.max(maxO, c.LayoutOrder)
-					end
-				end
-				tabButton.LayoutOrder = maxO + 1
 				tabButton.Size = UDim2.new(0, 50, tabButton.Size.Y.Scale, tabButton.Size.Y.Offset)
 				tabButton.Visible = true
 				tabButton:fade(false, Library.CurrentTheme.Main, 0.1)			
@@ -1444,19 +1226,6 @@ function Library:tab(options)
 		Image = options.Icon,
 		Theme = {ImageColor3 = "StrongText"}
 	})
-
-	pcall(function()
-		tabButtonText.Active = false
-	end)
-	pcall(function()
-		tabButtonIcon.Active = false
-	end)
-	pcall(function()
-		tabButtonText.Interactable = false
-	end)
-	pcall(function()
-		tabButtonIcon.Interactable = false
-	end)
 
 	local tabButtonClose = tabButton:object("ImageButton", {
 		AnchorPoint = Vector2.new(1, 0.5),
@@ -1510,8 +1279,6 @@ function Library:tab(options)
 			Library.UrlLabel.Text = Library.Url .. "/" .. lastTab[3]:lower()
 		end
 	end)
-
-	Library:_hookTabStripReorder(self, tabButton)
 
 	return setmetatable({
 		statusText = self.statusText,
@@ -3206,16 +2973,6 @@ function Library:_theme_selector()
 				BackgroundColor3 = themeColors.Secondary
 			}):round(4)
 
-			local slotT = themeColors.SlotTransparency
-			if slotT then
-				if slotT.Main ~= nil then
-					colorMain.BackgroundTransparency = slotT.Main
-				end
-				if slotT.Secondary ~= nil then
-					colorSecondary.BackgroundTransparency = slotT.Secondary
-				end
-			end
-
 			colorSecondary:object("UIListLayout", {
 				Padding = UDim.new(0, 5)
 			})
@@ -3789,23 +3546,14 @@ function Library:label(options)
 
 	local description = labelContainer:object("TextLabel", {
 		BackgroundTransparency = 1,
-		Position = UDim2.fromOffset(10, 27),
-		Size = UDim2.new(1, -20, 0, 0),
+		Position = UDim2.new(0, 10, 1, -5),
+		Size = UDim2.new(0.5, -10, 1, -22),
 		Text = options.Description,
 		TextSize = 18,
+		AnchorPoint = Vector2.new(0, 1),
 		Theme = {TextColor3 = "WeakText"},
-		TextXAlignment = Enum.TextXAlignment.Left,
-		TextWrapped = true,
-		AutomaticSize = Enum.AutomaticSize.Y
+		TextXAlignment = Enum.TextXAlignment.Left
 	})
-
-	-- Resize container to fit wrapped description
-	task.defer(function()
-		local descHeight = description.AbsoluteObject.AbsoluteSize.Y
-		local totalHeight = math.max(52, 27 + descHeight + 10)
-		labelContainer.Size = UDim2.new(1, -20, 0, totalHeight)
-		self:_resize_tab()
-	end)
 
 	self:_resize_tab()
 
