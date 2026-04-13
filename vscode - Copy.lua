@@ -28,6 +28,7 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local Mouse = LocalPlayer:GetMouse()
 local HTTPService = game:GetService("HttpService")
+local Lighting = game:GetService("Lighting")
  
 local Library = {
 	Themes = {
@@ -204,19 +205,29 @@ function Library:apply_glass_surface(guiWrapper)
 		grad.Parent = abs
 	end
 	local stroke = abs:FindFirstChild("_GlassStroke")
-	if not stroke then
-		stroke = Instance.new("UIStroke")
-		stroke.Name = "_GlassStroke"
-		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-		stroke.Thickness = 1
-		stroke.Color = Color3.fromRGB(176, 210, 255)
-		stroke.Transparency = 0.42
-		stroke.Parent = abs
+	if stroke then
+		stroke:Destroy()
+	end
+end
+
+function Library:apply_scene_blur(theme)
+	theme = theme or Library.CurrentTheme
+	local blur = Lighting:FindFirstChild("_MercuryGlassBlur")
+	if self:is_glass_theme(theme) then
+		if not blur then
+			blur = Instance.new("BlurEffect")
+			blur.Name = "_MercuryGlassBlur"
+			blur.Parent = Lighting
+		end
+		blur.Size = 10
+	elseif blur then
+		blur:Destroy()
 	end
 end
 
 function Library:change_theme(toTheme)
 	Library.CurrentTheme = toTheme
+	self:apply_scene_blur(toTheme)
 	local c = self:lighten(toTheme.Tertiary, 20)
 	Library.DisplayName.Text = "Welcome, <font color='rgb(" ..  math.floor(c.R*255) .. "," .. math.floor(c.G*255) .. "," .. math.floor(c.B*255) .. ")'> <b>" .. LocalPlayer.DisplayName .. "</b> </font>"
 	for color, objects in next, Library.ThemeObjects do
@@ -264,15 +275,7 @@ function Library:change_theme(toTheme)
 				grad.Rotation = 135
 				grad.Parent = absFrame
 			end
-			if not existingStroke then
-				local stroke = Instance.new("UIStroke")
-				stroke.Name = "_GlassStroke"
-				stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-				stroke.Thickness = 1
-				stroke.Color = Color3.fromRGB(180, 210, 255)
-				stroke.Transparency = 0.4
-				stroke.Parent = absFrame
-			end
+			if existingStroke then existingStroke:Destroy() end
 		else
 			-- Non-transparent theme: remove glass elements
 			if existingGlass then existingGlass:Destroy() end
@@ -715,6 +718,7 @@ function Library:create(options)
 	end
  
 	self.CurrentTheme = options.Theme
+	self:apply_scene_blur(options.Theme)
  
 	local gui = self:object("ScreenGui", {
 		Parent = (RunService:IsStudio() and LocalPlayer.PlayerGui) or game:GetService("CoreGui"),
@@ -771,13 +775,6 @@ function Library:create(options)
 			}
 			grad.Rotation = 135
 			grad.Parent = core.AbsoluteObject
-			local stroke = Instance.new("UIStroke")
-			stroke.Name = "_GlassStroke"
-			stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-			stroke.Thickness = 1
-			stroke.Color = Color3.fromRGB(180, 210, 255)
-			stroke.Transparency = 0.4
-			stroke.Parent = core.AbsoluteObject
 		end
 	end
  
