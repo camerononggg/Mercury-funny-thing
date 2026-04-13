@@ -28,7 +28,6 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local Mouse = LocalPlayer:GetMouse()
 local HTTPService = game:GetService("HttpService")
-local Lighting = game:GetService("Lighting")
  
 local Library = {
 	Themes = {
@@ -99,12 +98,6 @@ local Library = {
 				Main = 0.35,    -- main window: semi-transparent glass
 				Secondary = 0.55, -- inner panels: more transparent
 			},
-			Glass = {
-				IdleButtonTransparency = 0.72,
-				HoverButtonTransparency = 0.5,
-				SelectedButtonTransparency = 0.38,
-				PressedButtonTransparency = 0.25
-			}
 		},
 		VisualStudio = {}
 	},
@@ -150,84 +143,8 @@ function Library:set_defaults(defaults, options)
 	return defaults
 end
  
-function Library:is_glass_theme(theme)
-	theme = theme or Library.CurrentTheme
-	return theme and theme.Glass ~= nil and theme.SlotTransparency ~= nil
-end
-
-function Library:get_button_transparency(state, theme)
-	theme = theme or Library.CurrentTheme
-	if self:is_glass_theme(theme) then
-		local g = theme.Glass
-		if state == "idle" then
-			return g.IdleButtonTransparency or 0.72
-		elseif state == "hover" then
-			return g.HoverButtonTransparency or 0.5
-		elseif state == "selected" then
-			return g.SelectedButtonTransparency or 0.38
-		elseif state == "pressed" then
-			return g.PressedButtonTransparency or 0.25
-		end
-	end
-	if state == "idle" then
-		return 1
-	elseif state == "hover" then
-		return 0.3
-	elseif state == "selected" then
-		return 0.15
-	elseif state == "pressed" then
-		return 0
-	end
-	return 1
-end
-
-function Library:apply_glass_surface(guiWrapper)
-	if not self:is_glass_theme() then
-		return
-	end
-	local abs = guiWrapper and guiWrapper.AbsoluteObject
-	if not abs then
-		return
-	end
-	local grad = abs:FindFirstChild("_GlassGradient")
-	if not grad then
-		grad = Instance.new("UIGradient")
-		grad.Name = "_GlassGradient"
-		grad.Color = ColorSequence.new{
-			ColorSequenceKeypoint.new(0,  Color3.fromRGB(255, 255, 255)),
-			ColorSequenceKeypoint.new(1,  Color3.fromRGB(198, 224, 255))
-		}
-		grad.Transparency = NumberSequence.new{
-			NumberSequenceKeypoint.new(0, 0.8),
-			NumberSequenceKeypoint.new(1, 0.92)
-		}
-		grad.Rotation = 130
-		grad.Parent = abs
-	end
-	local stroke = abs:FindFirstChild("_GlassStroke")
-	if stroke then
-		stroke:Destroy()
-	end
-end
-
-function Library:apply_scene_blur(theme)
-	theme = theme or Library.CurrentTheme
-	local blur = Lighting:FindFirstChild("_MercuryGlassBlur")
-	if self:is_glass_theme(theme) then
-		if not blur then
-			blur = Instance.new("BlurEffect")
-			blur.Name = "_MercuryGlassBlur"
-			blur.Parent = Lighting
-		end
-		blur.Size = 10
-	elseif blur then
-		blur:Destroy()
-	end
-end
-
 function Library:change_theme(toTheme)
 	Library.CurrentTheme = toTheme
-	self:apply_scene_blur(toTheme)
 	local c = self:lighten(toTheme.Tertiary, 20)
 	Library.DisplayName.Text = "Welcome, <font color='rgb(" ..  math.floor(c.R*255) .. "," .. math.floor(c.G*255) .. "," .. math.floor(c.B*255) .. ")'> <b>" .. LocalPlayer.DisplayName .. "</b> </font>"
 	for color, objects in next, Library.ThemeObjects do
@@ -275,7 +192,15 @@ function Library:change_theme(toTheme)
 				grad.Rotation = 135
 				grad.Parent = absFrame
 			end
-			if existingStroke then existingStroke:Destroy() end
+			if not existingStroke then
+				local stroke = Instance.new("UIStroke")
+				stroke.Name = "_GlassStroke"
+				stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+				stroke.Thickness = 1
+				stroke.Color = Color3.fromRGB(180, 210, 255)
+				stroke.Transparency = 0.4
+				stroke.Parent = absFrame
+			end
 		else
 			-- Non-transparent theme: remove glass elements
 			if existingGlass then existingGlass:Destroy() end
@@ -433,8 +358,7 @@ function Library:object(class, properties)
 			TextYAlignment = Enum.TextYAlignment.Center,
 			AnchorPoint = Vector2.new(0.5, 1),
 			BackgroundTransparency = 1,
-			TextTransparency = 1,
-			Visible = false
+			TextTransparency = 1
 		}):round(5)
 		-- Defer size calculation so TextBounds is populated before we read it,
 		-- preventing the ghost (zero-size) tooltip on first hover.
@@ -457,10 +381,6 @@ function Library:object(class, properties)
  
 		methods.MouseEnter:connect(function()
 			hovered = true
-			tooltipContainer.Visible = true
-			tooltipContainer.BackgroundTransparency = 1
-			tooltipContainer.TextTransparency = 1
-			tooltipArrow.ImageTransparency = 1
 			wait(0.2)
 			if hovered then
 				tooltipContainer:tween{BackgroundTransparency = 0.2, TextTransparency = 0.2}
@@ -470,16 +390,8 @@ function Library:object(class, properties)
  
 		methods.MouseLeave:connect(function()
 			hovered = false
-			tooltipContainer:tween({BackgroundTransparency = 1, TextTransparency = 1}, function()
-				if not hovered then
-					tooltipContainer.Visible = false
-				end
-			end)
-			tooltipArrow:tween({ImageTransparency = 1}, function()
-				if not hovered then
-					tooltipArrow.ImageTransparency = 1
-				end
-			end)
+			tooltipContainer:tween{BackgroundTransparency = 1, TextTransparency = 1}
+			tooltipArrow:tween{ImageTransparency = 1}
 		end)
  
 		return methods
@@ -718,7 +630,6 @@ function Library:create(options)
 	end
  
 	self.CurrentTheme = options.Theme
-	self:apply_scene_blur(options.Theme)
  
 	local gui = self:object("ScreenGui", {
 		Parent = (RunService:IsStudio() and LocalPlayer.PlayerGui) or game:GetService("CoreGui"),
@@ -775,6 +686,13 @@ function Library:create(options)
 			}
 			grad.Rotation = 135
 			grad.Parent = core.AbsoluteObject
+			local stroke = Instance.new("UIStroke")
+			stroke.Name = "_GlassStroke"
+			stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+			stroke.Thickness = 1
+			stroke.Color = Color3.fromRGB(180, 210, 255)
+			stroke.Transparency = 0.4
+			stroke.Parent = core.AbsoluteObject
 		end
 	end
  
@@ -996,12 +914,11 @@ function Library:create(options)
  
 	local homeButton = tabButtons:object("TextButton", {
 		Name = "hehehe siuuuuuuuuu",
-		BackgroundTransparency = self:get_button_transparency("selected"),
+		BackgroundTransparency = 0,
 		Theme = {BackgroundColor3 = "Secondary"},
 		Size = UDim2.new(0, 125, 0, 25),
 		LayoutOrder = 1
 	}):round(5)
-	self:apply_glass_surface(homeButton)
  
 	local homeButtonText = homeButton:object("TextLabel", {
 		Theme = {TextColor3 = "StrongText"},
@@ -1055,23 +972,23 @@ function Library:create(options)
  
 		homeButton.MouseEnter:connect(function()
 			hovered = true
-			homeButton:tween{BackgroundTransparency = ((selectedTab == homeButton) and Library:get_button_transparency("selected")) or Library:get_button_transparency("hover")}
+			homeButton:tween{BackgroundTransparency = ((selectedTab == homeButton) and 0.15) or 0.3}
 		end)
  
 		homeButton.MouseLeave:connect(function()
 			hovered = false
-			homeButton:tween{BackgroundTransparency = ((selectedTab == homeButton) and Library:get_button_transparency("selected")) or Library:get_button_transparency("idle")}
+			homeButton:tween{BackgroundTransparency = ((selectedTab == homeButton) and 0.15) or 1}
 		end)
  
 		homeButton.MouseButton1Down:connect(function()
 			down = true
-			homeButton:tween{BackgroundTransparency = Library:get_button_transparency("pressed")}
+			homeButton:tween{BackgroundTransparency = 0}
 		end)
  
 		UserInputService.InputEnded:connect(function(key)
 			if key.UserInputType == Enum.UserInputType.MouseButton1 then
 				down = false
-				homeButton:tween{BackgroundTransparency = ((selectedTab == homeButton) and Library:get_button_transparency("selected")) or (hovered and Library:get_button_transparency("hover")) or Library:get_button_transparency("idle")}
+				homeButton:tween{BackgroundTransparency = ((selectedTab == homeButton) and 0.15) or (hovered and 0.3) or 1}
 			end
  
 		end)
@@ -1082,10 +999,10 @@ function Library:create(options)
 				local button = tabInfo[2]
 				page.Visible = false
 			end
-			selectedTab:tween{BackgroundTransparency = ((selectedTab == homeButton) and Library:get_button_transparency("selected")) or Library:get_button_transparency("idle")}
+			selectedTab:tween{BackgroundTransparency = ((selectedTab == homeButton) and 0.15) or 1}
 			selectedTab = homeButton
 			homePage.Visible = true
-			homeButton.BackgroundTransparency = Library:get_button_transparency("selected")
+			homeButton.BackgroundTransparency = 0
 			Library.UrlLabel.Text = Library.Url .. "/home"
 		end)
 	end
@@ -1107,7 +1024,6 @@ function Library:create(options)
 		Theme = {BackgroundColor3 = "Secondary"},
 		Size = UDim2.new(1, -20, 0, 100)
 	}):round(7)
-	self:apply_glass_surface(profile)
  
 	local profilePictureContainer = profile:object("ImageLabel", {
 		Image = Players:GetUserThumbnailAsync(LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100),
@@ -1471,10 +1387,8 @@ function Library:tab(options)
  
 	if not options.Internal then
 		quickAccessButton = self.quickAccess:object("TextButton", {
-			BackgroundTransparency = self:get_button_transparency("idle"),
 			Theme = {BackgroundColor3 = "Secondary"}
 		}):round(5):tooltip(options.Name)
-		self:apply_glass_surface(quickAccessButton)
  
 		quickAccessIcon = quickAccessButton:object("ImageLabel", {
 			BackgroundTransparency = 1,
@@ -1497,13 +1411,12 @@ function Library:tab(options)
 	})
  
 	local tabButton = Library:object("TextButton", {
-		BackgroundTransparency = self:get_button_transparency("idle"),
+		BackgroundTransparency = 1,
 		Parent = self.nilFolder.AbsoluteObject,
 		Theme = {BackgroundColor3 = "Secondary"},
 		Size = UDim2.new(0, 125, 0, 25),
 		Visible = false
 	}):round(5)
-	self:apply_glass_surface(tabButton)
  
 	self.Tabs[#self.Tabs+1] = {tab, tabButton, options.Name}
  
@@ -1513,23 +1426,23 @@ function Library:tab(options)
  
 		tabButton.MouseEnter:connect(function()
 			hovered = true
-			tabButton:tween{BackgroundTransparency = ((selectedTab == tabButton) and Library:get_button_transparency("selected")) or Library:get_button_transparency("hover")}
+			tabButton:tween{BackgroundTransparency = ((selectedTab == tabButton) and 0.15) or 0.3}
 		end)
  
 		tabButton.MouseLeave:connect(function()
 			hovered = false
-			tabButton:tween{BackgroundTransparency = ((selectedTab == tabButton) and Library:get_button_transparency("selected")) or Library:get_button_transparency("idle")}
+			tabButton:tween{BackgroundTransparency = ((selectedTab == tabButton) and 0.15) or 1}
 		end)
  
 		tabButton.MouseButton1Down:connect(function()
 			down = true
-			tabButton:tween{BackgroundTransparency = Library:get_button_transparency("pressed")}
+			tabButton:tween{BackgroundTransparency = 0}
 		end)
  
 		UserInputService.InputEnded:connect(function(key)
 			if key.UserInputType == Enum.UserInputType.MouseButton1 then
 				down = false
-				tabButton:tween{BackgroundTransparency = ((selectedTab == tabButton) and Library:get_button_transparency("selected")) or (hovered and Library:get_button_transparency("hover")) or Library:get_button_transparency("idle")}
+				tabButton:tween{BackgroundTransparency = ((selectedTab == tabButton) and 0.15) or (hovered and 0.3) or 1}
 			end
  
 		end)
@@ -1540,25 +1453,19 @@ function Library:tab(options)
 				local button = tabInfo[2]
 				page.Visible = false
 			end
-			selectedTab:tween{BackgroundTransparency = ((selectedTab == tabButton) and Library:get_button_transparency("selected")) or Library:get_button_transparency("idle")}
+			selectedTab:tween{BackgroundTransparency = ((selectedTab == tabButton) and 0.15) or 1}
 			selectedTab = tabButton
 			tab.Visible = true
-			tabButton.BackgroundTransparency = Library:get_button_transparency("selected")
+			tabButton.BackgroundTransparency = 0
 			Library.UrlLabel.Text = Library.Url .. "/" .. options.Name:lower()
 		end)
  
 		quickAccessButton.MouseEnter:connect(function()
-			quickAccessButton:tween{
-				BackgroundColor3 = Library.CurrentTheme.Tertiary,
-				BackgroundTransparency = Library:get_button_transparency("hover")
-			}
+			quickAccessButton:tween{BackgroundColor3 = Library.CurrentTheme.Tertiary}
 		end)
  
 		quickAccessButton.MouseLeave:connect(function()
-			quickAccessButton:tween{
-				BackgroundColor3 = Library.CurrentTheme.Secondary,
-				BackgroundTransparency = Library:get_button_transparency("idle")
-			}
+			quickAccessButton:tween{BackgroundColor3 = Library.CurrentTheme.Secondary}
 		end)
  
 		quickAccessButton.MouseButton1Click:connect(function()
@@ -1580,10 +1487,10 @@ function Library:tab(options)
 					local button = tabInfo[2]
 					page.Visible = false
 				end
-				selectedTab:tween{BackgroundTransparency = ((selectedTab == tabButton) and Library:get_button_transparency("selected")) or Library:get_button_transparency("idle")}
+				selectedTab:tween{BackgroundTransparency = ((selectedTab == tabButton) and 0.15) or 1}
 				selectedTab = tabButton
 				tab.Visible = true
-				tabButton.BackgroundTransparency = Library:get_button_transparency("selected")
+				tabButton.BackgroundTransparency = 0
 				Library.UrlLabel.Text = Library.Url .. "/" .. options.Name:lower()
 			end
 		end)
@@ -1658,19 +1565,19 @@ function Library:tab(options)
 			selectedTab.Visible = false
 			tab.Visible = false
 			self.homePage.Visible = true
-			self.homeButton:tween{BackgroundTransparency = Library:get_button_transparency("selected")}
+			self.homeButton:tween{BackgroundTransparency = 0.15}
 			selectedTab = self.homeButton
 			Library.UrlLabel.Text = Library.Url .. "/home"	
 		elseif tabButton == lastTab[2] then
 			lastTab = visible[#visible-1]
 			tab.Visible = false
-			lastTab[2]:tween{BackgroundTransparency = Library:get_button_transparency("selected")}
+			lastTab[2]:tween{BackgroundTransparency = 0.15}
 			lastTab[1].Visible = true
 			selectedTab = lastTab[2]
 			Library.UrlLabel.Text = Library.Url .. "/" .. lastTab[3]:lower()
 		else
 			tab.Visible = false
-			lastTab[2]:tween{BackgroundTransparency = Library:get_button_transparency("selected")}
+			lastTab[2]:tween{BackgroundTransparency = 0.15}
 			lastTab[1].Visible = true
 			selectedTab = lastTab[2]
 			Library.UrlLabel.Text = Library.Url .. "/" .. lastTab[3]:lower()
