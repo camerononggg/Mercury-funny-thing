@@ -165,13 +165,13 @@ function Library:change_theme(toTheme)
 	for _, entry in ipairs(Library.ThemeTransparencyObjects) do
 		local element, themeKey = entry[1], entry[2]
 		local trans = (st and st[themeKey] ~= nil) and st[themeKey] or 0
-		element:tween({BackgroundTransparency = trans})
+		element:tween({BackgroundTransparency = trans, Length = 0.35})
 	end
 	-- Always update mainFrame (core) and contentFrame transparency, even when they
 	-- were created before ThemeTransparencyObjects was populated.
 	if Library.mainFrame then
 		local mainTrans = (st and st.Main ~= nil) and st.Main or 0
-		Library.mainFrame:tween({BackgroundTransparency = mainTrans})
+		Library.mainFrame:tween({BackgroundTransparency = mainTrans, Length = 0.35})
 		-- Glassmorphism: add/remove a subtle gradient overlay and border for Frost
 		local absFrame = Library.mainFrame.AbsoluteObject
 		local existingGlass = absFrame:FindFirstChild("_GlassGradient")
@@ -201,16 +201,19 @@ function Library:change_theme(toTheme)
 	end
 	if Library.contentFrame then
 		local secTrans = (st and st.Secondary ~= nil) and st.Secondary or 0
-		Library.contentFrame:tween({BackgroundTransparency = secTrans})
+		Library.contentFrame:tween({BackgroundTransparency = secTrans, Length = 0.35})
 	end
 	-- Keep top/nav cards less transparent than the main content when switching themes.
 	local topTrans = (st and 0.02) or 0
 	local cardTrans = (st and 0.04) or 0
 	if Library.urlBarFrame then
-		Library.urlBarFrame:tween({BackgroundTransparency = topTrans})
+		Library.urlBarFrame:tween({BackgroundTransparency = topTrans, Length = 0.35})
 	end
 	if Library.profileFrame then
-		Library.profileFrame:tween({BackgroundTransparency = cardTrans})
+		Library.profileFrame:tween({BackgroundTransparency = cardTrans, Length = 0.35})
+	end
+	if Library.topChromeFrame then
+		Library.topChromeFrame:tween({BackgroundTransparency = (st and 0.12) or 1, Length = 0.35})
 	end
 end
  
@@ -657,6 +660,19 @@ function Library:create(options)
 	rawset(core, "oldSize", options.Size)
  
 	self.mainFrame = core
+
+	-- Stabilize the header area so Frost never looks overly see-through at the top.
+	local topChrome = core:object("Frame", {
+		Size = UDim2.new(1, -10, 0, 74),
+		Position = UDim2.fromOffset(5, 4),
+		Theme = {BackgroundColor3 = {"Secondary", -8}},
+		ZIndex = 0
+	}):round(8)
+	Library.topChromeFrame = topChrome
+	do
+		local st = Library.CurrentTheme.SlotTransparency
+		topChrome.AbsoluteObject.BackgroundTransparency = (st and 0.12) or 1
+	end
  
 	-- Apply initial main-frame transparency (Frost default case)
 	do
@@ -1158,6 +1174,7 @@ function Library:create(options)
 		local sec = changelogTab:section{Name = "2026-04-14"}
 		sec:label{Text = "BUILD MARKER: FROST-CHECK-0414-A", Description = "If you can see this line, you are running the latest edited file."}
 		sec:label{Text = "Frost pass: transparency + stroke cleanup", Description = "Removed forced Frost border stroke paths and reduced transparency intensity."}
+		sec:label{Text = "BUILD MARKER: FROST-CHECK-0414-B", Description = "Top chrome is less transparent and theme-switch transparency now tweens smoothly."}
 	end
 
 	do
