@@ -95,8 +95,8 @@ local Library = {
 			StrongText = Color3.fromRGB(246, 250, 255),
 			WeakText = Color3.fromRGB(148, 162, 192),
 			SlotTransparency = {
-				Main = 0.15,    -- main window: semi-transparent glass
-				Secondary = 0.3, -- inner panels: more transparent
+				Main = 0.03,    -- near-solid with slight transparency
+				Secondary = 0.08, -- subtle inner translucency
 			},
 		},
 		VisualStudio = {}
@@ -192,15 +192,7 @@ function Library:change_theme(toTheme)
 				grad.Rotation = 135
 				grad.Parent = absFrame
 			end
-			if not existingStroke then
-				local stroke = Instance.new("UIStroke")
-				stroke.Name = "_GlassStroke"
-				stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-				stroke.Thickness = 1
-				stroke.Color = Color3.fromRGB(180, 210, 255)
-				stroke.Transparency = 0.4
-				stroke.Parent = absFrame
-			end
+			if existingStroke then existingStroke:Destroy() end
 		else
 			-- Non-transparent theme: remove glass elements
 			if existingGlass then existingGlass:Destroy() end
@@ -686,13 +678,10 @@ function Library:create(options)
 			}
 			grad.Rotation = 135
 			grad.Parent = core.AbsoluteObject
-			local stroke = Instance.new("UIStroke")
-			stroke.Name = "_GlassStroke"
-			stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-			stroke.Thickness = 1
-			stroke.Color = Color3.fromRGB(180, 210, 255)
-			stroke.Transparency = 0.4
-			stroke.Parent = core.AbsoluteObject
+			local existingStroke = core.AbsoluteObject:FindFirstChild("_GlassStroke")
+			if existingStroke then
+				existingStroke:Destroy()
+			end
 		end
 	end
  
