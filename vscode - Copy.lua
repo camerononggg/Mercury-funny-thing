@@ -413,17 +413,6 @@ function Library:object(class, properties)
 				end
 				localObject[property] = modifiedColor
 				table.insert(self.ThemeObjects[themeKey], {methods, property, themeKey, colorAlter})
-				if property == "BackgroundColor3" then
-					local supportsSlotTransparency = (themeKey == "Main" or themeKey == "Secondary")
-					local isInteractive = localObject:IsA("GuiButton")
-					local hasExplicitTransparency = properties.BackgroundTransparency ~= nil
-					if supportsSlotTransparency and not isInteractive and not hasExplicitTransparency then
-						local slotTrans = Library.CurrentTheme.SlotTransparency
-						local trans = (slotTrans and slotTrans[themeKey] ~= nil) and slotTrans[themeKey] or 0
-						localObject.BackgroundTransparency = trans
-						table.insert(Library.ThemeTransparencyObjects, {methods, themeKey})
-					end
-				end
 			end
 		end,
 	}
