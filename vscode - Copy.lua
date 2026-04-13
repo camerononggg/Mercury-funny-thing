@@ -95,8 +95,8 @@ local Library = {
 			StrongText = Color3.fromRGB(246, 250, 255),
 			WeakText = Color3.fromRGB(148, 162, 192),
 			SlotTransparency = {
-				Main = 0.03,    -- near-solid with slight transparency
-				Secondary = 0.08, -- subtle inner translucency
+				Main = 0.01,    -- almost solid top shell
+				Secondary = 0.05, -- subtle panel translucency
 			},
 		},
 		VisualStudio = {}
@@ -202,6 +202,15 @@ function Library:change_theme(toTheme)
 	if Library.contentFrame then
 		local secTrans = (st and st.Secondary ~= nil) and st.Secondary or 0
 		Library.contentFrame:tween({BackgroundTransparency = secTrans})
+	end
+	-- Keep top/nav cards less transparent than the main content when switching themes.
+	local topTrans = (st and 0.02) or 0
+	local cardTrans = (st and 0.04) or 0
+	if Library.urlBarFrame then
+		Library.urlBarFrame:tween({BackgroundTransparency = topTrans})
+	end
+	if Library.profileFrame then
+		Library.profileFrame:tween({BackgroundTransparency = cardTrans})
 	end
 end
  
@@ -817,6 +826,13 @@ function Library:create(options)
 		Position = UDim2.new(0, 5,0, 35),
 		Theme = {BackgroundColor3 = "Secondary"}
 	}):round(5)
+	Library.urlBarFrame = urlBar
+	do
+		local st = Library.CurrentTheme.SlotTransparency
+		if st then
+			urlBar.AbsoluteObject.BackgroundTransparency = 0.02
+		end
+	end
  
 	local searchIcon = urlBar:object("ImageLabel", {
 		AnchorPoint = Vector2.new(0, .5),
@@ -1002,6 +1018,13 @@ function Library:create(options)
 		Theme = {BackgroundColor3 = "Secondary"},
 		Size = UDim2.new(1, -20, 0, 100)
 	}):round(7)
+	Library.profileFrame = profile
+	do
+		local st = Library.CurrentTheme.SlotTransparency
+		if st then
+			profile.AbsoluteObject.BackgroundTransparency = 0.04
+		end
+	end
  
 	local profilePictureContainer = profile:object("ImageLabel", {
 		Image = Players:GetUserThumbnailAsync(LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100),
