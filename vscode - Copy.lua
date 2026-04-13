@@ -95,8 +95,8 @@ local Library = {
 			StrongText = Color3.fromRGB(246, 250, 255),
 			WeakText = Color3.fromRGB(148, 162, 192),
 			SlotTransparency = {
-				Main = 0.5,
-				Secondary = 0.5,
+				Main = 0.35,    -- main window: semi-transparent glass
+				Secondary = 0.55, -- inner panels: more transparent
 			},
 		},
 		VisualStudio = {}
@@ -166,6 +166,11 @@ function Library:change_theme(toTheme)
 		local element, themeKey = entry[1], entry[2]
 		local trans = (st and st[themeKey] ~= nil) and st[themeKey] or 0
 		element:tween({BackgroundTransparency = trans})
+	end
+	-- Also update the main window and content panel (created before ThemeTransparencyObjects are registered)
+	if Library.mainFrame then
+		local mainTrans = (st and st.Main ~= nil) and st.Main or 0
+		Library.mainFrame:tween({BackgroundTransparency = mainTrans})
 	end
 end
 
@@ -609,6 +614,11 @@ function Library:create(options)
 	core:fade(false, nil, 0.4)
 	core:tween({Size = options.Size, Length = 0.3}, function()
 		core.ClipsDescendants = false
+		-- Apply Frost glass transparency to the main window if the theme has it
+		local st = Library.CurrentTheme.SlotTransparency
+		if st and st.Main ~= nil then
+			core.AbsoluteObject.BackgroundTransparency = st.Main
+		end
 	end)
 
 	rawset(core, "oldSize", options.Size)
@@ -808,6 +818,14 @@ function Library:create(options)
 		Position = UDim2.new(0.5, 0, 1, -20),
 		Size = UDim2.new(1, -10, 1, -86)
 	}):round(7) -- Sept
+
+	-- Apply Frost glass transparency to the content panel if the theme has it
+	do
+		local st = Library.CurrentTheme.SlotTransparency
+		if st and st.Secondary ~= nil then
+			content.AbsoluteObject.BackgroundTransparency = st.Secondary
+		end
+	end
 
 	local status = core:object("TextLabel", {
 		AnchorPoint = Vector2.new(0, 1),
@@ -3771,14 +3789,23 @@ function Library:label(options)
 
 	local description = labelContainer:object("TextLabel", {
 		BackgroundTransparency = 1,
-		Position = UDim2.new(0, 10, 1, -5),
-		Size = UDim2.new(0.5, -10, 1, -22),
+		Position = UDim2.fromOffset(10, 27),
+		Size = UDim2.new(1, -20, 0, 0),
 		Text = options.Description,
 		TextSize = 18,
-		AnchorPoint = Vector2.new(0, 1),
 		Theme = {TextColor3 = "WeakText"},
-		TextXAlignment = Enum.TextXAlignment.Left
+		TextXAlignment = Enum.TextXAlignment.Left,
+		TextWrapped = true,
+		AutomaticSize = Enum.AutomaticSize.Y
 	})
+
+	-- Resize container to fit wrapped description
+	task.defer(function()
+		local descHeight = description.AbsoluteObject.AbsoluteSize.Y
+		local totalHeight = math.max(52, 27 + descHeight + 10)
+		labelContainer.Size = UDim2.new(1, -20, 0, totalHeight)
+		self:_resize_tab()
+	end)
 
 	self:_resize_tab()
 
