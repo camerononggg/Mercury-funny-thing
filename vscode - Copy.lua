@@ -424,7 +424,8 @@ function Library:object(class, properties)
 				if property == "BackgroundColor3" then
 					local supportsSlotTransparency = (themeKey == "Main" or themeKey == "Secondary")
 					local isInteractive = localObject:IsA("GuiButton")
-					if supportsSlotTransparency and not isInteractive then
+					local hasExplicitTransparency = properties.BackgroundTransparency ~= nil
+					if supportsSlotTransparency and not isInteractive and not hasExplicitTransparency then
 						local slotTrans = Library.CurrentTheme.SlotTransparency
 						local trans = (slotTrans and slotTrans[themeKey] ~= nil) and slotTrans[themeKey] or 0
 						localObject.BackgroundTransparency = trans
