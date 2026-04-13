@@ -358,7 +358,8 @@ function Library:object(class, properties)
 			TextYAlignment = Enum.TextYAlignment.Center,
 			AnchorPoint = Vector2.new(0.5, 1),
 			BackgroundTransparency = 1,
-			TextTransparency = 1
+			TextTransparency = 1,
+			Visible = false
 		}):round(5)
 		-- Defer size calculation so TextBounds is populated before we read it,
 		-- preventing the ghost (zero-size) tooltip on first hover.
@@ -381,6 +382,10 @@ function Library:object(class, properties)
  
 		methods.MouseEnter:connect(function()
 			hovered = true
+			tooltipContainer.Visible = true
+			tooltipContainer.BackgroundTransparency = 1
+			tooltipContainer.TextTransparency = 1
+			tooltipArrow.ImageTransparency = 1
 			wait(0.2)
 			if hovered then
 				tooltipContainer:tween{BackgroundTransparency = 0.2, TextTransparency = 0.2}
@@ -390,8 +395,16 @@ function Library:object(class, properties)
  
 		methods.MouseLeave:connect(function()
 			hovered = false
-			tooltipContainer:tween{BackgroundTransparency = 1, TextTransparency = 1}
-			tooltipArrow:tween{ImageTransparency = 1}
+			tooltipContainer:tween({BackgroundTransparency = 1, TextTransparency = 1}, function()
+				if not hovered then
+					tooltipContainer.Visible = false
+				end
+			end)
+			tooltipArrow:tween({ImageTransparency = 1}, function()
+				if not hovered then
+					tooltipArrow.ImageTransparency = 1
+				end
+			end)
 		end)
  
 		return methods
