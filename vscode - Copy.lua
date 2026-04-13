@@ -1132,6 +1132,12 @@ function Library:create(options)
 	})
  
 	do
+		local sec = changelogTab:section{Name = "2026-04-14"}
+		sec:label{Text = "BUILD MARKER: FROST-CHECK-0414-A", Description = "If you can see this line, you are running the latest edited file."}
+		sec:label{Text = "Frost pass: transparency + stroke cleanup", Description = "Removed forced Frost border stroke paths and reduced transparency intensity."}
+	end
+
+	do
 		local sec = changelogTab:section{Name = "2026-04-12"}
 		sec:label{Text = "Theme: Frost (glass)", Description = "Optional SlotTransparency on a theme tints Main/Secondary panels; see Library.Themes.Frost. No ColorSequence."}
 		sec:label{Text = "Tab bar: drag to reorder", Description = "Reorder uses Heartbeat + LayoutOrder; scrolling pauses while dragging. Icon/title no longer steal clicks from the tab button."}
